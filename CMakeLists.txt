@@ -23,3 +23,5 @@ target_link_libraries(NovaEngine
     ${VKW_LIB}
     ${GLFW_LIB}
 )
+
+add_subdirectory("test")
