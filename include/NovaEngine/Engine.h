@@ -6,8 +6,8 @@ namespace Nova {
     class Engine {
     public:
         Engine(Renderer&& renderer);
-        Engine(const Renderer& other) = delete;
-        Engine& operator = (const Renderer& other) = delete;
+        Engine(const Engine& other) = delete;
+        Engine& operator = (const Engine& other) = delete;
         Engine(Engine&& other);
         Engine& operator = (Engine&& other) = default;
 
