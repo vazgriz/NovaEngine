@@ -40,5 +40,5 @@ void Renderer::CreateInstance(const std::string& appName, const std::vector<std:
 
     info.enabledLayerNames = layers;
 
-    instance = std::make_unique<vk::Instance>(info);
+    m_instance = std::make_unique<vk::Instance>(info);
 }

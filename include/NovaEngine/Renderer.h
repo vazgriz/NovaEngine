@@ -12,8 +12,10 @@ namespace Nova {
         Renderer(Renderer&& other);
         Renderer& operator = (Renderer&& other) = default;
 
+        vk::Instance& instance() { return *m_instance; }
+
     private:
-        std::unique_ptr<vk::Instance> instance;
+        std::unique_ptr<vk::Instance> m_instance;
 
         void CreateInstance(const std::string& appName, const std::vector<std::string>& extensions, const std::vector<std::string>& layers);
     };
