@@ -12,5 +12,4 @@ Engine::Engine(Engine&& other) {
 
 void Engine::addWindow(Window& window) {
     m_windows.push_back(&window);
-    window.init(m_renderer->device().physicalDevice());
 }

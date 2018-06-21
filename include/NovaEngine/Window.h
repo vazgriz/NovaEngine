@@ -36,7 +36,6 @@ namespace Nova {
         std::vector<vk::ImageView> m_imageViews;
 
         void createSurface();
-        void init(const vk::PhysicalDevice& physicalDevice);
         void recreateSwapchain();
         vk::SurfaceFormat chooseFormat(const std::vector<vk::SurfaceFormat>& formats);
         vk::PresentMode chooseMode(const std::vector<vk::PresentMode>& modes);

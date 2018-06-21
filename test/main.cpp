@@ -8,16 +8,15 @@ int main() {
 
     Nova::Renderer renderer = Nova::Renderer("Test", {}, { "VK_LAYER_LUNARG_standard_validation" });
     Nova::Engine engine = Nova::Engine(renderer);
-    Nova::Window window = Nova::Window(engine, 800, 600);
 
     for (auto& physicalDevice : renderer.instance().physicalDevices()) {
-        if (renderer.isValid(physicalDevice, window)) {
-            renderer.createDevice(physicalDevice, window, {}, nullptr);
+        if (renderer.isValid(physicalDevice)) {
+            renderer.createDevice(physicalDevice, {}, nullptr);
             break;
         }
     }
 
-    engine.addWindow(window);
+    Nova::Window window = Nova::Window(engine, 800, 600);
 
     glfwTerminate();
     return 0;

@@ -14,7 +14,7 @@ namespace Nova {
         Renderer(Renderer&& other);
         Renderer& operator = (Renderer&& other) = default;
 
-        static bool isValid(const vk::PhysicalDevice& physicalDevice, const Window& window);
+        static bool isValid(const vk::PhysicalDevice& physicalDevice);
 
         vk::Instance& instance() { return *m_instance; }
         std::vector<const vk::PhysicalDevice*> validDevices() { return m_validDevices; }
@@ -23,7 +23,7 @@ namespace Nova {
         const vk::Queue* graphicsQueue() const { return m_graphicsQueue; }
         const vk::Queue* presentQueue() const { return m_presentQueue; }
 
-        void createDevice(const vk::PhysicalDevice& physicalDevice, const Window& window, const std::vector<std::string>& extensions, vk::PhysicalDeviceFeatures* features);
+        void createDevice(const vk::PhysicalDevice& physicalDevice, const std::vector<std::string>& extensions, vk::PhysicalDeviceFeatures* features);
 
     private:
         std::unique_ptr<vk::Instance> m_instance;

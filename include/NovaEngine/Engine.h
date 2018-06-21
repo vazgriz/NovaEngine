@@ -14,10 +14,11 @@ namespace Nova {
 
         Renderer& renderer() { return *m_renderer; }
 
-        void addWindow(Window& window);
-
     private:
+        friend class Window;
         Renderer* m_renderer;
         std::vector<Window*> m_windows;
+
+        void addWindow(Window& window);
     };
 }

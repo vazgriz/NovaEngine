@@ -18,18 +18,20 @@ Renderer::Renderer(Renderer&& other) {
     *this = std::move(other);
 }
 
-bool Renderer::isValid(const vk::PhysicalDevice& physicalDevice, const Window& window) {
+bool Renderer::isValid(const vk::PhysicalDevice& physicalDevice) {
     bool graphicsFound = false;
     bool presentFound = false;
 
     for (uint32_t i = 0; i < physicalDevice.queueFamilies().size(); i++) {
         const auto& family = physicalDevice.queueFamilies()[i];
 
-        if (family.queueCount > 0 && (family.queueFlags & vk::QueueFlags::Graphics) != vk::QueueFlags::None) {
+        if (family.queueCount > 0
+            && (family.queueFlags & vk::QueueFlags::Graphics) != vk::QueueFlags::None) {
             graphicsFound = true;
         }
 
-        if (family.queueCount > 0 && window.surface().supported(physicalDevice, i)) {
+        if (family.queueCount > 0
+            && glfwGetPhysicalDevicePresentationSupport(physicalDevice.instance().handle(), physicalDevice.handle(), i)) {
             presentFound = true;
         }
     }
@@ -72,7 +74,7 @@ void Renderer::createInstance(const std::string& appName, const std::vector<std:
     m_instance = std::make_unique<vk::Instance>(info);
 }
 
-void Renderer::createDevice(const vk::PhysicalDevice& physicalDevice, const Window& window, const std::vector<std::string>& extensions, vk::PhysicalDeviceFeatures* features) {
+void Renderer::createDevice(const vk::PhysicalDevice& physicalDevice, const std::vector<std::string>& extensions, vk::PhysicalDeviceFeatures* features) {
     uint32_t graphicsFamily;
     uint32_t presentFamily;
     bool graphicsFound = false;
@@ -86,7 +88,8 @@ void Renderer::createDevice(const vk::PhysicalDevice& physicalDevice, const Wind
             graphicsFound = true;
         }
 
-        if (!presentFound && family.queueCount > 0 && window.surface().supported(physicalDevice, i)) {
+        if (!presentFound && family.queueCount > 0
+            && glfwGetPhysicalDevicePresentationSupport(m_instance->handle(), physicalDevice.handle(), i)) {
             presentFamily = i;
             presentFound = true;
         }

@@ -11,6 +11,8 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     m_window = glfwCreateWindow(width, height, title.size() > 0 ? title.c_str() : nullptr, nullptr, nullptr);
     createSurface();
+    recreateSwapchain();
+    engine.addWindow(*this);
 }
 
 Window::Window(Window&& other) {
@@ -33,13 +35,6 @@ void Window::createSurface() {
     VkSurfaceKHR surface;
     glfwCreateWindowSurface(m_engine->renderer().instance().handle(), m_window, nullptr, &surface);
     m_surface = std::make_unique<vk::Surface>(m_engine->renderer().instance(), surface);
-}
-
-void Window::init(const vk::PhysicalDevice& physicalDevice) {
-    m_physicalDevice = &physicalDevice;
-    m_swapchain.reset();
-    m_imageViews.clear();
-    recreateSwapchain();
 }
 
 void Window::recreateSwapchain() {
