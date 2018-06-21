@@ -10,6 +10,13 @@ int main() {
     Nova::Engine engine = Nova::Engine(std::move(renderer));
     Nova::Window window = Nova::Window(engine, 800, 600);
 
+    for (auto& physicalDevice : engine.renderer().instance().physicalDevices()) {
+        if (engine.renderer().isValid(physicalDevice, window)) {
+            engine.renderer().createDevice(physicalDevice, window, {}, nullptr);
+            break;
+        }
+    }
+
     glfwTerminate();
     return 0;
 }
