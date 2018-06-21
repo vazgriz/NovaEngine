@@ -8,11 +8,13 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
     m_renderer = &m_engine->renderer();
     m_width = width;
     m_height = height;
+    engine.addWindow(*this);
+    m_physicalDevice = &m_renderer->device().physicalDevice();
+
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     m_window = glfwCreateWindow(width, height, title.size() > 0 ? title.c_str() : nullptr, nullptr, nullptr);
     createSurface();
     recreateSwapchain();
-    engine.addWindow(*this);
 }
 
 Window::Window(Window&& other) {
@@ -35,6 +37,11 @@ void Window::createSurface() {
     VkSurfaceKHR surface;
     glfwCreateWindowSurface(m_engine->renderer().instance().handle(), m_window, nullptr, &surface);
     m_surface = std::make_unique<vk::Surface>(m_engine->renderer().instance(), surface);
+
+    bool supported = m_surface->supported(*m_physicalDevice, m_renderer->presentQueue()->familyIndex());
+    if (!supported) {
+        throw std::runtime_error("Surface is not supported on this Physical Device");
+    }
 }
 
 void Window::recreateSwapchain() {
