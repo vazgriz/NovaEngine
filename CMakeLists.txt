@@ -9,8 +9,8 @@ set(GLFW_INCLUDE)
 set(GLFW_LIB)
 
 add_library(NovaEngine
-    "src/engine.cpp"
-    "src/renderer.cpp"
+    "src/Engine.cpp"
+    "src/Renderer.cpp"
 )
 target_include_directories(NovaEngine
     PUBLIC "${PROJECT_SOURCE_DIR}/include"
