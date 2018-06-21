@@ -2,10 +2,10 @@
 
 using namespace Nova;
 
-Engine::Engine(Renderer&& m_renderer) : m_renderer(std::move(m_renderer)) {
-
+Engine::Engine(Renderer& renderer) {
+    m_renderer = &renderer;
 }
 
-Engine::Engine(Engine&& other) : m_renderer(std::move(other.m_renderer)) {
+Engine::Engine(Engine&& other) {
     *this = std::move(other);
 }
