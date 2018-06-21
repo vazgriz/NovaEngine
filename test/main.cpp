@@ -6,17 +6,25 @@
 int main() {
     glfwInit();
 
-    Nova::Renderer renderer = Nova::Renderer("Test", {}, { "VK_LAYER_LUNARG_standard_validation" });
-    Nova::Engine engine = Nova::Engine(renderer);
+    {
+        Nova::Renderer renderer = Nova::Renderer("Test", {}, { "VK_LAYER_LUNARG_standard_validation" });
+        Nova::Engine engine = Nova::Engine(renderer);
 
-    for (auto& physicalDevice : renderer.instance().physicalDevices()) {
-        if (renderer.isValid(physicalDevice)) {
-            renderer.createDevice(physicalDevice, {}, nullptr);
-            break;
+        bool found = false;
+        for (auto& physicalDevice : renderer.instance().physicalDevices()) {
+            if (renderer.isValid(physicalDevice)) {
+                renderer.createDevice(physicalDevice, {}, nullptr);
+                found = true;
+                break;
+            }
         }
-    }
 
-    Nova::Window window = Nova::Window(engine, 800, 600);
+        if (!found) {
+            throw std::runtime_error("Could not find compatible device");
+        }
+
+        Nova::Window window = Nova::Window(engine, 800, 600);
+    }
 
     glfwTerminate();
     return 0;
