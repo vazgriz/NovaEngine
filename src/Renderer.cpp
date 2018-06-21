@@ -36,11 +36,7 @@ bool Renderer::isValid(const vk::PhysicalDevice& physicalDevice) {
         }
     }
 
-    if (!graphicsFound && !presentFound) {
-        return false;
-    }
-
-    return true;
+    return graphicsFound && presentFound;
 }
 
 void Renderer::createInstance(const std::string& appName, const std::vector<std::string>& extensions, const std::vector<std::string>& layers) {
