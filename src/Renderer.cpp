@@ -6,9 +6,29 @@
 
 using namespace Nova;
 
-const std::vector<const char*> deviceExtensions = {
+const std::vector<std::string> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
+
+std::vector<std::string> merge(const std::vector<std::string>& a, const std::vector<std::string>& b) {
+    std::unordered_set<std::string> set;
+
+    for (auto& str : a) {
+        set.insert(str);
+    }
+
+    for (auto& str : b) {
+        set.insert(str);
+    }
+
+    std::vector<std::string> result;
+
+    for (auto& str : set) {
+        result.emplace_back(std::move(str));
+    }
+
+    return result;
+}
 
 Renderer::Renderer(const std::string& appName, const std::vector<std::string>& extensions, const std::vector<std::string>& layers) {
     createInstance(appName, extensions, layers);
@@ -45,26 +65,19 @@ void Renderer::createInstance(const std::string& appName, const std::vector<std:
     appInfo.engineName = "NovaEngine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 
-    std::unordered_set<std::string> extensionSet;
-    for (auto& extension : extensions) {
-        extensionSet.insert(extension);
-    }
-
     uint32_t exCount;
     const char** requiredExtensions = glfwGetRequiredInstanceExtensions(&exCount);
+    std::vector<std::string> requiredExtensionsV;
 
     for (uint32_t i = 0; i < exCount; i++) {
-        extensionSet.insert(requiredExtensions[i]);
+        requiredExtensionsV.emplace_back(requiredExtensions[i]);
     }
+
+    std::vector<std::string> extensionList = merge(requiredExtensionsV, extensions);
 
     vk::InstanceCreateInfo info = {};
     info.applicationInfo = &appInfo;
-
-    std::vector<std::string> extensionList;
-    for (auto& extension : extensionSet) {
-        info.enabledExtensionNames.emplace_back(std::move(extension));
-    }
-
+    info.enabledExtensionNames = std::move(extensionList);
     info.enabledLayerNames = layers;
 
     m_instance = std::make_unique<vk::Instance>(info);
@@ -110,19 +123,7 @@ void Renderer::createDevice(const vk::PhysicalDevice& physicalDevice, const std:
         features_ = *features;
     }
 
-    std::unordered_set<std::string> extensionSet;
-    for (auto& ex : extensions) {
-        extensionSet.insert(ex);
-    }
-
-    for (auto& ex : deviceExtensions) {
-        extensionSet.insert(ex);
-    }
-
-    std::vector<std::string> extensionList;
-    for (auto& ex : extensionSet) {
-        extensionList.emplace_back(std::move(ex));
-    }
+    std::vector<std::string> extensionList = merge(extensions, deviceExtensions);
 
     vk::DeviceCreateInfo info = {};
     info.queueCreateInfos = std::move(queueInfos);
