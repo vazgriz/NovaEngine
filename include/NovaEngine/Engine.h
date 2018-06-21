@@ -1,6 +1,6 @@
 #pragma once
 #include <VulkanWrapper/VulkanWrapper.h>
-#include <NovaEngine/NovaEngine.h>
+#include "NovaEngine/Renderer.h"
 
 namespace Nova {
     class Engine {
