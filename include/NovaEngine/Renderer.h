@@ -17,6 +17,6 @@ namespace Nova {
     private:
         std::unique_ptr<vk::Instance> m_instance;
 
-        void CreateInstance(const std::string& appName, const std::vector<std::string>& extensions, const std::vector<std::string>& layers);
+        void createInstance(const std::string& appName, const std::vector<std::string>& extensions, const std::vector<std::string>& layers);
     };
 }

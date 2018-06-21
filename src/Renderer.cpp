@@ -5,14 +5,14 @@
 using namespace Nova;
 
 Renderer::Renderer(const std::string& appName, const std::vector<std::string>& extensions, const std::vector<std::string>& layers) {
-    CreateInstance(appName, extensions, layers);
+    createInstance(appName, extensions, layers);
 }
 
 Renderer::Renderer(Renderer&& other) {
     *this = std::move(other);
 }
 
-void Renderer::CreateInstance(const std::string& appName, const std::vector<std::string>& extensions, const std::vector<std::string>& layers) {
+void Renderer::createInstance(const std::string& appName, const std::vector<std::string>& extensions, const std::vector<std::string>& layers) {
     vk::ApplicationInfo appInfo = {};
     appInfo.applicationName = appName;
     appInfo.engineName = "NovaEngine";
