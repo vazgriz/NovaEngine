@@ -10,17 +10,9 @@ int main() {
         Nova::Renderer renderer = Nova::Renderer("Test", {}, { "VK_LAYER_LUNARG_standard_validation" });
         Nova::Engine engine = Nova::Engine(renderer);
 
-        bool found = false;
-        for (auto& physicalDevice : renderer.instance().physicalDevices()) {
-            if (renderer.isValid(physicalDevice)) {
-                renderer.createDevice(physicalDevice, {}, nullptr);
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            throw std::runtime_error("Could not find compatible device");
+        for (auto& physicalDevice : renderer.validDevices()) {
+            renderer.createDevice(*physicalDevice, {}, nullptr);
+            break;
         }
 
         Nova::Window window = Nova::Window(engine, 800, 600);

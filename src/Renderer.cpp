@@ -81,6 +81,12 @@ void Renderer::createInstance(const std::string& appName, const std::vector<std:
     info.enabledLayerNames = layers;
 
     m_instance = std::make_unique<vk::Instance>(info);
+
+    for (auto& physicalDevice : m_instance->physicalDevices()) {
+        if (isValid(physicalDevice)) {
+            m_validDevices.push_back(&physicalDevice);
+        }
+    }
 }
 
 void Renderer::createDevice(const vk::PhysicalDevice& physicalDevice, const std::vector<std::string>& extensions, vk::PhysicalDeviceFeatures* features) {
