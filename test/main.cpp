@@ -17,6 +17,8 @@ int main() {
         }
     }
 
+    engine.addWindow(window);
+
     glfwTerminate();
     return 0;
 }

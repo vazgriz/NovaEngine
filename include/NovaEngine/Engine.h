@@ -1,6 +1,7 @@
 #pragma once
 #include <VulkanWrapper/VulkanWrapper.h>
 #include "NovaEngine/Renderer.h"
+#include "NovaEngine/Window.h"
 
 namespace Nova {
     class Engine {
@@ -13,7 +14,10 @@ namespace Nova {
 
         Renderer& renderer() { return *m_renderer; }
 
+        void addWindow(Window& window);
+
     private:
         Renderer* m_renderer;
+        std::vector<Window*> m_windows;
     };
 }
