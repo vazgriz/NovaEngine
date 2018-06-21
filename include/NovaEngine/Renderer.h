@@ -20,6 +20,9 @@ namespace Nova {
         std::vector<const vk::PhysicalDevice*> validDevices() { return m_validDevices; }
         vk::Device& device() { return *m_device; }
 
+        const vk::Queue* graphicsQueue() const { return m_graphicsQueue; }
+        const vk::Queue* presentQueue() const { return m_presentQueue; }
+
         void createDevice(const vk::PhysicalDevice& physicalDevice, const Window& window, const std::vector<std::string>& extensions, vk::PhysicalDeviceFeatures* features);
 
     private:
