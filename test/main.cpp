@@ -16,6 +16,7 @@ int main() {
         }
 
         Nova::Window window = Nova::Window(engine, 800, 600);
+        Nova::QueueGraph graph = Nova::QueueGraph(engine);
     }
 
     glfwTerminate();

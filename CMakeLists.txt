@@ -12,6 +12,7 @@ add_library(NovaEngine
     "src/Engine.cpp"
     "src/Renderer.cpp"
     "src/Window.cpp"
+    "src/QueueGraph.cpp"
 )
 target_include_directories(NovaEngine
     PUBLIC "${PROJECT_SOURCE_DIR}/include"
