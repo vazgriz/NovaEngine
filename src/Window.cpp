@@ -3,7 +3,7 @@
 
 using namespace Nova;
 
-Window::Window(Engine& engine, int32_t width, int32_t height, const std::string& title) {
+Window::Window(Engine& engine, int32_t width, int32_t height, const std::string& title) : m_window(nullptr, nullptr) {
     m_engine = &engine;
     m_renderer = &m_engine->renderer();
     m_width = width;
@@ -12,30 +12,17 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
     m_physicalDevice = &m_renderer->device().physicalDevice();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    m_window = glfwCreateWindow(width, height, title.size() > 0 ? title.c_str() : nullptr, nullptr, nullptr);
+    m_window = std::unique_ptr<GLFWwindow, void(*)(GLFWwindow*)>(
+        glfwCreateWindow(width, height, title.size() > 0 ? title.c_str() : nullptr, nullptr, nullptr),
+        glfwDestroyWindow
+    );
     createSurface();
     recreateSwapchain();
 }
 
-Window::Window(Window&& other) {
-    *this = std::move(other);
-}
-
-Window& Window::operator = (Window&& other) {
-    m_window = other.m_window;
-    other.m_window = nullptr;
-    m_engine = other.m_engine;
-    m_surface = std::move(other.m_surface);
-    return *this;
-}
-
-Window::~Window() {
-    glfwDestroyWindow(m_window);
-}
-
 void Window::createSurface() {
     VkSurfaceKHR surface;
-    glfwCreateWindowSurface(m_engine->renderer().instance().handle(), m_window, nullptr, &surface);
+    glfwCreateWindowSurface(m_engine->renderer().instance().handle(), m_window.get(), nullptr, &surface);
     m_surface = std::make_unique<vk::Surface>(m_engine->renderer().instance(), surface);
 
     bool supported = m_surface->supported(*m_physicalDevice, m_renderer->presentQueue()->familyIndex());

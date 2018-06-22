@@ -13,9 +13,8 @@ namespace Nova {
         Window(Engine& engine, int32_t width, int32_t height, const std::string& title = "NovaEngine");
         Window(const Window& other) = delete;
         Window& operator = (const Window& other) = delete;
-        Window(Window&& other);
-        Window& operator = (Window&& other);
-        ~Window();
+        Window(Window&& other) = default;
+        Window& operator = (Window&& other) = default;
 
         Engine& engine() const { return *m_engine; }
         vk::Surface& surface() const { return *m_surface; }
@@ -28,7 +27,7 @@ namespace Nova {
         Engine* m_engine;
         Renderer* m_renderer;
         const vk::PhysicalDevice* m_physicalDevice;
-        GLFWwindow* m_window;
+        std::unique_ptr<GLFWwindow, void(*)(GLFWwindow*)> m_window;
         int32_t m_width;
         int32_t m_height;
         std::unique_ptr<vk::Surface> m_surface;
