@@ -11,7 +11,7 @@ namespace Nova {
         Renderer(const std::string& appName, const std::vector<std::string>& extensions, const std::vector<std::string>& layers);
         Renderer(const Renderer& other) = delete;
         Renderer& operator = (const Renderer& other) = delete;
-        Renderer(Renderer&& other);
+        Renderer(Renderer&& other) = default;
         Renderer& operator = (Renderer&& other) = default;
 
         static bool isValid(const vk::PhysicalDevice& physicalDevice);

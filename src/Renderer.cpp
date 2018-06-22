@@ -34,10 +34,6 @@ Renderer::Renderer(const std::string& appName, const std::vector<std::string>& e
     createInstance(appName, extensions, layers);
 }
 
-Renderer::Renderer(Renderer&& other) {
-    *this = std::move(other);
-}
-
 bool Renderer::isValid(const vk::PhysicalDevice& physicalDevice) {
     bool graphicsFound = false;
     bool presentFound = false;
