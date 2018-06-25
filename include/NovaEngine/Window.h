@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <VulkanWrapper/VulkanWrapper.h>
+#include "NovaEngine/Signal.h"
 
 namespace Nova {
     class Engine;
@@ -23,6 +24,8 @@ namespace Nova {
         const std::vector<vk::ImageView>& imageViews() const { return m_imageViews; }
 
         void update();
+        Signal<vk::Swapchain&>& onSwapchainChanged() { return *m_swapchainSignal; }
+        Signal<int32_t, int32_t>& onResize() { return *m_resizeSignal; }
 
         bool shouldClose() const { return glfwWindowShouldClose(m_window.get()); }
 
@@ -47,6 +50,8 @@ namespace Nova {
         void createImageViews();
 
         bool m_resized = false;
+        std::unique_ptr<Signal<vk::Swapchain&>> m_swapchainSignal;
+        std::unique_ptr<Signal<int32_t, int32_t>> m_resizeSignal;
 
         static void onResize(GLFWwindow* window, int width, int height);
         void onResize(int32_t width, int32_t height);

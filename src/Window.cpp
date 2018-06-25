@@ -16,7 +16,12 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
         glfwCreateWindow(width, height, title.size() > 0 ? title.c_str() : nullptr, nullptr, nullptr),
         glfwDestroyWindow
     );
+
     glfwSetWindowUserPointer(m_window.get(), this);
+    glfwSetWindowSizeCallback(m_window.get(), &Window::onResize);
+
+    m_swapchainSignal = std::make_unique<Signal<vk::Swapchain&>>();
+    m_resizeSignal = std::make_unique<Signal<int32_t, int32_t>>();
 
     createSurface();
     recreateSwapchain();
@@ -41,6 +46,9 @@ void Window::update() {
         m_width = static_cast<int32_t>(width);
         m_height = static_cast<int32_t>(height);
         recreateSwapchain();
+
+        m_swapchainSignal->emit(*m_swapchain);
+        m_resizeSignal->emit(m_width, m_height);
     }
 }
 
@@ -56,6 +64,7 @@ void Window::createSurface() {
 }
 
 void Window::recreateSwapchain() {
+    m_engine->renderer().device().waitIdle();
     createSwapchain();
     createImageViews();
 }
