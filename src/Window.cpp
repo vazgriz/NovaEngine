@@ -16,8 +16,32 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
         glfwCreateWindow(width, height, title.size() > 0 ? title.c_str() : nullptr, nullptr, nullptr),
         glfwDestroyWindow
     );
+    glfwSetWindowUserPointer(m_window.get(), this);
+
     createSurface();
     recreateSwapchain();
+}
+
+void Window::onResize(GLFWwindow* window, int width, int height) {
+    reinterpret_cast<Window*>(glfwGetWindowUserPointer(window))->onResize(static_cast<int32_t>(width), static_cast<int32_t>(height));
+}
+
+void Window::onResize(int32_t width, int32_t height) {
+    m_resized = true;
+}
+
+void Window::update() {
+    if (m_resized) {
+        m_resized = false;
+
+        int width;
+        int height;
+        glfwGetFramebufferSize(m_window.get(), &width, &height);
+
+        m_width = static_cast<int32_t>(width);
+        m_height = static_cast<int32_t>(height);
+        recreateSwapchain();
+    }
 }
 
 void Window::createSurface() {

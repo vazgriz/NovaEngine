@@ -22,6 +22,8 @@ namespace Nova {
         vk::Swapchain& swapchain() const { return *m_swapchain; }
         const std::vector<vk::ImageView>& imageViews() const { return m_imageViews; }
 
+        void update();
+
         bool shouldClose() const { return glfwWindowShouldClose(m_window.get()); }
 
     private:
@@ -43,5 +45,10 @@ namespace Nova {
         vk::Extent2D chooseExtent(const vk::SurfaceCapabilities& capabilities);
         void createSwapchain();
         void createImageViews();
+
+        bool m_resized = false;
+
+        static void onResize(GLFWwindow* window, int width, int height);
+        void onResize(int32_t width, int32_t height);
     };
 }
