@@ -117,8 +117,12 @@ int main() {
 
         while (!window.shouldClose()) {
             glfwPollEvents();
-            window.update();
-            graph.submit();
+            if (window.iconified()) {
+                glfwWaitEvents();
+            } else {
+                window.update();
+                graph.submit();
+            }
         }
     }
 

@@ -19,9 +19,11 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
 
     glfwSetWindowUserPointer(m_window.get(), this);
     glfwSetWindowSizeCallback(m_window.get(), &Window::onResize);
+    glfwSetWindowIconifyCallback(m_window.get(), &Window::onIconify);
 
     m_swapchainSignal = std::make_unique<Signal<vk::Swapchain&>>();
     m_resizeSignal = std::make_unique<Signal<int32_t, int32_t>>();
+    m_iconifySignal = std::make_unique<Signal<bool>>();
 
     createSurface();
     recreateSwapchain();
@@ -35,6 +37,14 @@ void Window::onResize(int32_t width, int32_t height) {
     m_resized = true;
 }
 
+void Window::onIconify(GLFWwindow* window, int iconified) {
+    reinterpret_cast<Window*>(glfwGetWindowUserPointer(window))->onIconify(iconified);
+}
+
+void Window::onIconify(bool iconified) {
+    m_iconified = iconified;
+}
+
 void Window::update() {
     if (m_resized) {
         m_resized = false;
@@ -45,10 +55,13 @@ void Window::update() {
 
         m_width = static_cast<int32_t>(width);
         m_height = static_cast<int32_t>(height);
-        recreateSwapchain();
 
-        m_swapchainSignal->emit(*m_swapchain);
-        m_resizeSignal->emit(m_width, m_height);
+        //if (m_width != 0 && m_height != 0) {
+            recreateSwapchain();
+
+            m_swapchainSignal->emit(*m_swapchain);
+            m_resizeSignal->emit(m_width, m_height);
+        //}
     }
 }
 

@@ -26,8 +26,10 @@ namespace Nova {
         void update();
         Signal<vk::Swapchain&>& onSwapchainChanged() { return *m_swapchainSignal; }
         Signal<int32_t, int32_t>& onResize() { return *m_resizeSignal; }
+        Signal<bool>& onIconify() { return *m_iconifySignal; }
 
         bool shouldClose() const { return glfwWindowShouldClose(m_window.get()); }
+        bool iconified() const { return m_iconified; }
 
     private:
         friend class Engine;
@@ -37,6 +39,7 @@ namespace Nova {
         std::unique_ptr<GLFWwindow, void(*)(GLFWwindow*)> m_window;
         int32_t m_width;
         int32_t m_height;
+        bool m_iconified = false;
         std::unique_ptr<vk::Surface> m_surface;
         std::unique_ptr<vk::Swapchain> m_swapchain;
         std::vector<vk::ImageView> m_imageViews;
@@ -52,8 +55,12 @@ namespace Nova {
         bool m_resized = false;
         std::unique_ptr<Signal<vk::Swapchain&>> m_swapchainSignal;
         std::unique_ptr<Signal<int32_t, int32_t>> m_resizeSignal;
+        std::unique_ptr<Signal<bool>> m_iconifySignal;
 
         static void onResize(GLFWwindow* window, int width, int height);
         void onResize(int32_t width, int32_t height);
+
+        static void onIconify(GLFWwindow* window, int iconified);
+        void onIconify(bool iconified);
     };
 }
