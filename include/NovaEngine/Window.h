@@ -22,6 +22,8 @@ namespace Nova {
         vk::Swapchain& swapchain() const { return *m_swapchain; }
         const std::vector<vk::ImageView>& imageViews() const { return m_imageViews; }
 
+        bool shouldClose() const { return glfwWindowShouldClose(m_window.get()); }
+
     private:
         friend class Engine;
         Engine* m_engine;
