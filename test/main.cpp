@@ -3,9 +3,9 @@
 #include <GLFW/glfw3.h>
 #include <NovaEngine/NovaEngine.h>
 
-class TestNode : public Nova::RenderNode {
+class TestNode : public Nova::QueueNode {
 public:
-    TestNode(const vk::Queue& queue, vk::Swapchain& swapchain) : RenderNode(queue) {
+    TestNode(const vk::Queue& queue, vk::Swapchain& swapchain) : QueueNode(queue) {
         setSwapchain(swapchain);
         createSemaphores();
         createCommandPool();
@@ -15,37 +15,37 @@ public:
         m_swapchain = &swapchain;
     }
 
+    vk::Semaphore& acquireSemaphore() { return *m_acquireSemaphore; }
+    vk::Semaphore& renderSemaphore() { return *m_renderSemaphore; }
+
 private:
     void createSemaphores() {
         vk::SemaphoreCreateInfo info = {};
 
-        m_acquireSemaphore = std::make_unique<vk::Semaphore>(m_queue->device(), info);
-        m_renderSemaphore = std::make_unique<vk::Semaphore>(m_queue->device(), info);
-
-        addExternalWait(*m_acquireSemaphore, vk::PipelineStageFlags::ColorAttachmentOutput);
-        addExternalSignal(*m_renderSemaphore);
+        m_acquireSemaphore = std::make_unique<vk::Semaphore>(queue().device(), info);
+        m_renderSemaphore = std::make_unique<vk::Semaphore>(queue().device(), info);
     }
 
     void createCommandPool() {
         vk::CommandPoolCreateInfo info = {};
-        info.queueFamilyIndex = m_family;
+        info.queueFamilyIndex = queue().familyIndex();
         info.flags = vk::CommandPoolCreateFlags::ResetCommandBuffer;
 
-        m_commandPool = std::make_unique<vk::CommandPool>(m_queue->device(), info);
+        m_commandPool = std::make_unique<vk::CommandPool>(queue().device(), info);
 
         vk::CommandBufferAllocateInfo allocInfo = {};
         allocInfo.commandPool = m_commandPool.get();
-        allocInfo.commandBufferCount = 1;
+        allocInfo.commandBufferCount = static_cast<uint32_t>(m_swapchain->images().size());
 
-        m_commandBuffer = std::make_unique<vk::CommandBuffer>(std::move(m_commandPool->allocate(allocInfo)[0]));
+        m_commandBuffers = m_commandPool->allocate(allocInfo);
     }
 
-    void preRender() override {
+    void preSubmit() override {
         m_index = m_swapchain->acquireNextImage(~0, m_acquireSemaphore.get(), nullptr);
     }
 
-    std::vector<const vk::CommandBuffer*> render() override {
-        vk::CommandBuffer& commandBuffer = *m_commandBuffer;
+    std::vector<const vk::CommandBuffer*>& getCommands() override {
+        vk::CommandBuffer& commandBuffer = m_commandBuffers[m_index];
         commandBuffer.reset(vk::CommandBufferResetFlags::None);
 
         vk::CommandBufferBeginInfo beginInfo = {};
@@ -73,16 +73,19 @@ private:
 
         commandBuffer.end();
 
-        return { &commandBuffer };
+        m_commands.clear();
+        m_commands.push_back(&commandBuffer);
+
+        return m_commands;
     }
 
-    void postRender() override {
+    void postSubmit() override {
         vk::PresentInfo info = {};
         info.swapchains = { *m_swapchain };
         info.imageIndices = { m_index };
         info.waitSemaphores = { *m_renderSemaphore };
 
-        m_queue->present(info);
+        queue().present(info);
     }
 
     vk::Swapchain* m_swapchain;
@@ -90,7 +93,8 @@ private:
     std::unique_ptr<vk::Semaphore> m_renderSemaphore;
     uint32_t m_index;
     std::unique_ptr<vk::CommandPool> m_commandPool;
-    std::unique_ptr<vk::CommandBuffer> m_commandBuffer;
+    std::vector<vk::CommandBuffer> m_commandBuffers;
+    std::vector<const vk::CommandBuffer*> m_commands;
 };
 
 int main() {
@@ -106,8 +110,10 @@ int main() {
         }
 
         Nova::Window window = Nova::Window(engine, 800, 600);
-        Nova::RenderGraph graph = Nova::RenderGraph(engine, window.swapchain().images().size());
-        auto& node = graph.addNode(TestNode(*renderer.graphicsQueue(), window.swapchain()));
+        Nova::QueueGraph graph = Nova::QueueGraph(engine, window.swapchain().images().size());
+        auto& node = graph.addNode<TestNode>(*renderer.graphicsQueue(), window.swapchain());
+        graph.addExternalWait(node, node.acquireSemaphore(), vk::PipelineStageFlags::ColorAttachmentOutput);
+        graph.addExternalSignal(node, node.renderSemaphore());
         graph.bake();
 
         auto slot1 = window.onSwapchainChanged().connectMember(node, &TestNode::setSwapchain);

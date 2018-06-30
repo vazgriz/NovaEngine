@@ -6,32 +6,59 @@
 #include "NovaEngine/Engine.h"
 
 namespace Nova {
+    class QueueGraph;
+
     class QueueNode {
+        friend class QueueGraph;
     public:
+        QueueNode(const vk::Queue& queue);
+        virtual ~QueueNode() = default;
+
         virtual void preSubmit() {}
-        virtual const std::vector<std::reference_wrapper<const vk::CommandBuffer>>& getCommands() = 0;
+        virtual const std::vector<const vk::CommandBuffer*>& getCommands() = 0;
         virtual void postSubmit() {}
+
+        const vk::Queue& queue() const { return *m_queue; }
+
+    private:
+        const vk::Queue* m_queue;
     };
 
     class QueueGraph {
     public:
         struct Node {
-            QueueNode* node;
+            std::unique_ptr<QueueNode> node;
             const vk::Queue* queue;
-            const vk::Fence* fence;
             std::vector<Node*> inNodes;
             std::vector<Node*> outNodes;
+            std::vector<vk::Semaphore*> externalWaits;
+            std::vector<vk::PipelineStageFlags> externalStageMasks;
+            std::vector<vk::Semaphore*> externalSignals;
             vk::SubmitInfo info;
         };
 
-        QueueGraph(Engine& engine);
+        QueueGraph(Engine& engine, size_t frames);
         QueueGraph(const QueueGraph& other) = delete;
         QueueGraph& operator = (const QueueGraph& other) = delete;
         QueueGraph(QueueGraph&& other) = default;
         QueueGraph& operator = (QueueGraph&& other) = default;
+        ~QueueGraph();
 
-        void addNode(const vk::Queue& queue, QueueNode& node);
+        template<typename T, class... Types>
+        T& addNode(Types&&... args) {
+            std::unique_ptr<T> temp = std::make_unique<T>(std::forward<Types>(args)...);
+            T* ptr = temp.get();
+            m_nodes[ptr] = { std::move(temp) };
+            Node& node = m_nodes[ptr];
+            node.queue = node.node->m_queue;
+            return *static_cast<T*>(node.node.get());
+        }
+
         void addEdge(QueueNode& start, QueueNode& end, vk::PipelineStageFlags waitMask);
+        void addExternalWait(QueueNode& node, vk::Semaphore& semaphore, vk::PipelineStageFlags stageMask);
+        void addExternalSignal(QueueNode& node, vk::Semaphore& semaphore);
+
+        void setFrames(size_t frames);
         void bake();
 
         void submit();
@@ -42,9 +69,9 @@ namespace Nova {
         std::unordered_map<QueueNode*, Node> m_nodes;
         std::vector<Node*> m_nodeList;
         std::vector<std::unique_ptr<vk::Semaphore>> m_semaphores;
-        std::vector<std::unique_ptr<vk::Fence>> m_fences;
+        std::vector<std::vector<vk::Fence>> m_fences;
+        size_t m_frame = 0;
 
         void createSemaphores();
-        void createFences();
     };
 }
