@@ -15,6 +15,7 @@ RenderGraph::RenderGraph(Engine& engine, size_t frames) {
 
 RenderNode& RenderGraph::addNode(const vk::Queue& queue) {
     m_nodes.emplace_back(std::make_unique<RenderNode>(queue));
+    m_nodeSet.insert(m_nodes.back().get());
     return *m_nodes.back();
 }
 
