@@ -5,10 +5,59 @@
 #include "NovaEngine/Engine.h"
 
 namespace Nova {
+    class RenderNode;
+
+    class BufferUsage {
+        friend class RenderNode;
+
+        struct BufferInstance {
+            vk::Buffer* buffer;
+            size_t offset;
+            size_t size;
+        };
+
+    public:
+        BufferUsage(RenderNode* node, vk::AccessFlags accessMask);
+
+        void add(vk::Buffer& buffer, size_t offset, size_t size);
+
+    private:
+        RenderNode* m_node;
+        vk::AccessFlags m_accessMask;
+        std::vector<BufferInstance> m_buffers;
+
+        void clear();
+    };
+
+    class ImageUsage {
+        friend class RenderNode;
+
+        struct ImageInstance {
+            vk::Image* image;
+            vk::ImageSubresourceRange range;
+        };
+
+    public:
+        ImageUsage(RenderNode* node, vk::AccessFlags accessMask, vk::ImageLayout layout);
+
+        void add(vk::Image& image, vk::ImageSubresourceRange range);
+
+    private:
+        RenderNode* m_node;
+        vk::AccessFlags m_accessMask;
+        vk::ImageLayout m_layout;
+        std::vector<ImageInstance> m_images;
+
+        void clear();
+    };
+
     class RenderGraph;
 
     class RenderNode {
         friend class RenderGraph;
+        friend class BufferUsage;
+        friend class ImageUsage;
+
     public:
         RenderNode(RenderGraph* graph, const vk::Queue& queue);
         RenderNode(const RenderNode& other) = delete;
@@ -17,8 +66,11 @@ namespace Nova {
         RenderNode& operator = (RenderNode&& other) = default;
         ~RenderNode() = default;
 
-        void preRecord(vk::CommandBuffer& commandBuffer, vk::PipelineStageFlags srcStage, vk::PipelineStageFlags dstStage) const;
-        void postRecord(vk::CommandBuffer& commandBuffer, vk::PipelineStageFlags srcStage, vk::PipelineStageFlags dstStage) const;
+        BufferUsage& addBufferUsage(vk::AccessFlags accessMask);
+        ImageUsage& addImageUsage(vk::AccessFlags accessMask, vk::ImageLayout layout);
+
+        void preRecord(vk::CommandBuffer& commandBuffer, vk::PipelineStageFlags srcStage, vk::PipelineStageFlags dstStage);
+        void postRecord(vk::CommandBuffer& commandBuffer, vk::PipelineStageFlags srcStage, vk::PipelineStageFlags dstStage);
 
     private:
         RenderGraph* m_graph;
@@ -28,6 +80,22 @@ namespace Nova {
         std::vector<RenderNode*> m_outNodes;
         std::vector<vk::Event*> m_inEvents;
         std::vector<vk::Event*> m_outEvents;
+
+        std::vector<BufferUsage> m_bufferUsages;
+        std::vector<ImageUsage> m_imageUsages;
+        std::unordered_map<vk::Buffer*, BufferUsage*> m_bufferMap;
+        std::unordered_map<vk::Image*, ImageUsage*> m_imageMap;
+
+        std::vector<vk::MemoryBarrier> m_inMemoryBarriers;
+        std::vector<vk::BufferMemoryBarrier> m_inBufferBarriers;
+        std::vector<vk::ImageMemoryBarrier> m_inImageBarriers;
+        std::vector<vk::MemoryBarrier> m_outMemoryBarriers;
+        std::vector<vk::BufferMemoryBarrier> m_outBufferBarriers;
+        std::vector<vk::ImageMemoryBarrier> m_outImageBarriers;
+
+        bool addBuffer(vk::Buffer& buffer, BufferUsage& usage);
+        bool addImage(vk::Image& image, ImageUsage& usage);
+        void buildBarriers();
     };
 
     class RenderGraph {
