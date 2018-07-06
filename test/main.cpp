@@ -154,12 +154,13 @@ int main() {
 
     {
         Nova::Renderer renderer = Nova::Renderer("Test", {}, { "VK_LAYER_LUNARG_standard_validation" });
-        Nova::Engine engine = Nova::Engine(renderer);
 
         for (auto& physicalDevice : renderer.validDevices()) {
             renderer.createDevice(*physicalDevice, {}, nullptr);
             break;
         }
+
+        Nova::Engine engine = Nova::Engine(renderer);
 
         Nova::Window window = Nova::Window(engine, 800, 600);
         Nova::QueueGraph graph = Nova::QueueGraph(engine, window.swapchain().images().size());
