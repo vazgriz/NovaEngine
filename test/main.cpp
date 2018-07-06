@@ -13,12 +13,26 @@ public:
 
     void setSwapchain(vk::Swapchain& swapchain) {
         m_swapchain = &swapchain;
+        createRenderPass();
+        createImageViews();
+        createFramebuffers();
     }
 
     vk::Semaphore& acquireSemaphore() { return *m_acquireSemaphore; }
     vk::Semaphore& renderSemaphore() { return *m_renderSemaphore; }
 
 private:
+    vk::Swapchain* m_swapchain;
+    std::unique_ptr<vk::Semaphore> m_acquireSemaphore;
+    std::unique_ptr<vk::Semaphore> m_renderSemaphore;
+    uint32_t m_index;
+    std::unique_ptr<vk::CommandPool> m_commandPool;
+    std::vector<vk::CommandBuffer> m_commandBuffers;
+    std::vector<const vk::CommandBuffer*> m_commands;
+    std::unique_ptr<vk::RenderPass> m_renderPass;
+    std::vector<vk::ImageView> m_imageViews;
+    std::vector<vk::Framebuffer> m_framebuffers;
+
     void createSemaphores() {
         vk::SemaphoreCreateInfo info = {};
 
@@ -53,23 +67,14 @@ private:
 
         commandBuffer.begin(beginInfo);
 
-        vk::ImageMemoryBarrier barrier = {};
-        barrier.image = &m_swapchain->images()[m_index];
-        barrier.oldLayout = vk::ImageLayout::Undefined;
-        barrier.newLayout = vk::ImageLayout::PresentSrcKhr;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.srcAccessMask = vk::AccessFlags::None;
-        barrier.dstAccessMask = vk::AccessFlags::None;
-        barrier.subresourceRange.aspectMask = vk::ImageAspectFlags::Color;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
+        vk::RenderPassBeginInfo renderPassInfo = {};
+        renderPassInfo.renderPass = m_renderPass.get();
+        renderPassInfo.framebuffer = &m_framebuffers[m_index];
+        renderPassInfo.renderArea.extent = m_swapchain->extent();
+        renderPassInfo.clearValues = { {} };
 
-        commandBuffer.pipelineBarrier(
-            vk::PipelineStageFlags::ColorAttachmentOutput, vk::PipelineStageFlags::BottomOfPipe, vk::DependencyFlags::None,
-            {}, {}, { barrier });
+        commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::Inline);
+        commandBuffer.endRenderPass();
 
         commandBuffer.end();
 
@@ -88,13 +93,60 @@ private:
         queue().present(info);
     }
 
-    vk::Swapchain* m_swapchain;
-    std::unique_ptr<vk::Semaphore> m_acquireSemaphore;
-    std::unique_ptr<vk::Semaphore> m_renderSemaphore;
-    uint32_t m_index;
-    std::unique_ptr<vk::CommandPool> m_commandPool;
-    std::vector<vk::CommandBuffer> m_commandBuffers;
-    std::vector<const vk::CommandBuffer*> m_commands;
+    void createRenderPass() {
+        vk::AttachmentDescription attachment = {};
+        attachment.format = m_swapchain->format();
+        attachment.initialLayout = vk::ImageLayout::Undefined;
+        attachment.finalLayout = vk::ImageLayout::PresentSrcKhr;
+        attachment.loadOp = vk::AttachmentLoadOp::DontCare;
+        attachment.storeOp = vk::AttachmentStoreOp::Store;
+        attachment.samples = vk::SampleCountFlags::None;
+
+        vk::AttachmentReference attachmentRef = {};
+        attachmentRef.attachment = 0;
+        attachmentRef.layout = vk::ImageLayout::ColorAttachmentOptimal;
+
+        vk::SubpassDescription subpass = {};
+        subpass.colorAttachments = { attachmentRef };
+        subpass.pipelineBindPoint = vk::PipelineBindPoint::Graphics;
+
+        vk::RenderPassCreateInfo info = {};
+        info.attachments = { attachment };
+        info.subpasses = { subpass };
+
+        m_renderPass = std::make_unique<vk::RenderPass>(queue().device(), info);
+    }
+
+    void createImageViews() {
+        m_imageViews.clear();
+        for (size_t i = 0; i < m_swapchain->images().size(); i++) {
+            vk::ImageViewCreateInfo info = {};
+            info.image = &m_swapchain->images()[i];
+            info.format = m_swapchain->format();
+            info.viewType = vk::ImageViewType::_2D;
+            info.subresourceRange.aspectMask = vk::ImageAspectFlags::Color;
+            info.subresourceRange.baseArrayLayer = 0;
+            info.subresourceRange.layerCount = 1;
+            info.subresourceRange.baseMipLevel = 0;
+            info.subresourceRange.levelCount = 1;
+
+            m_imageViews.emplace_back(queue().device(), info);
+        }
+    }
+
+    void createFramebuffers() {
+        m_framebuffers.clear();
+        for (size_t i = 0; i < m_swapchain->images().size(); i++) {
+            vk::FramebufferCreateInfo info = {};
+            info.renderPass = m_renderPass.get();
+            info.attachments = { m_imageViews[i] };
+            info.width = m_swapchain->extent().width;
+            info.height = m_swapchain->extent().height;
+            info.layers = 1;
+
+            m_framebuffers.emplace_back(queue().device(), info);
+        }
+    }
 };
 
 int main() {
