@@ -20,6 +20,12 @@ QueueGraph::~QueueGraph() {
 }
 
 void QueueGraph::setFrames(size_t frames) {
+    if (m_fences.size() == frames) return;
+
+    for (auto& v : m_fences) {
+        vk::Fence::wait(m_engine->renderer().device(), v, true);
+    }
+
     m_fences.clear();
 
     for (size_t i = 0; i < frames; i++) {
