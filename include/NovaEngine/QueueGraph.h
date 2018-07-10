@@ -62,6 +62,8 @@ namespace Nova {
         void bake();
 
         void submit();
+        size_t frame() { return m_frame; }
+        size_t completedFrames();
 
     private:
         Engine* m_engine;
@@ -70,7 +72,8 @@ namespace Nova {
         std::vector<Node*> m_nodeList;
         std::vector<std::unique_ptr<vk::Semaphore>> m_semaphores;
         std::vector<std::vector<vk::Fence>> m_fences;
-        size_t m_frame = 0;
+        size_t m_frameCount = 0;
+        size_t m_frame = 1;
 
         void createSemaphores();
         void internalSetFrames(size_t frames);

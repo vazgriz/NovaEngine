@@ -20,11 +20,13 @@ QueueGraph::~QueueGraph() {
 }
 
 void QueueGraph::setFrames(size_t frames) {
-    if (m_fences.size() == frames) return;
+    if (m_frameCount == frames) return;
     internalSetFrames(frames);
 }
 
 void QueueGraph::internalSetFrames(size_t frames) {
+    m_frameCount = frames;
+
     for (auto& v : m_fences) {
         vk::Fence::wait(m_engine->renderer().device(), v, true);
     }
@@ -131,4 +133,9 @@ void QueueGraph::submit() {
     }
 
     m_frame++;
+}
+
+size_t QueueGraph::completedFrames() {
+    if (m_frameCount > m_frame) return 0;
+    return m_frame - m_frameCount;
 }
