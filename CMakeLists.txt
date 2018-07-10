@@ -15,6 +15,7 @@ add_library(NovaEngine
     "src/QueueGraph.cpp"
     "src/RenderGraph.cpp"
     "src/GenericAllocator.cpp"
+    "src/LinearAllocator.cpp"
 )
 target_include_directories(NovaEngine
     PUBLIC "${PROJECT_SOURCE_DIR}/include"
