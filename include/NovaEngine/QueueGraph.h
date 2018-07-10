@@ -73,5 +73,6 @@ namespace Nova {
         size_t m_frame = 0;
 
         void createSemaphores();
+        void internalSetFrames(size_t frames);
     };
 }

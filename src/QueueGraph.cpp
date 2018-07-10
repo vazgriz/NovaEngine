@@ -21,7 +21,10 @@ QueueGraph::~QueueGraph() {
 
 void QueueGraph::setFrames(size_t frames) {
     if (m_fences.size() == frames) return;
+    internalSetFrames(frames);
+}
 
+void QueueGraph::internalSetFrames(size_t frames) {
     for (auto& v : m_fences) {
         vk::Fence::wait(m_engine->renderer().device(), v, true);
     }
@@ -74,7 +77,7 @@ void QueueGraph::bake() {
     );
 
     createSemaphores();
-    setFrames(m_fences.size());
+    internalSetFrames(m_fences.size());
 }
 
 void QueueGraph::createSemaphores() {
