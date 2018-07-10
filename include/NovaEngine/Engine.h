@@ -16,8 +16,8 @@ namespace Nova {
 
     private:
         friend class Window;
-        Renderer* m_renderer;
-        std::vector<Window*> m_windows;
+        Renderer* m_renderer = nullptr;
+        Window* m_window = nullptr;
 
         void addWindow(Window& window);
     };

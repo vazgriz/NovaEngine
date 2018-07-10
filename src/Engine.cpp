@@ -7,5 +7,9 @@ Engine::Engine(Renderer& renderer) {
 }
 
 void Engine::addWindow(Window& window) {
-    m_windows.push_back(&window);
+    if (m_window != nullptr) {
+        throw std::runtime_error("Window already set");
+    }
+
+    m_window = &window;
 }
