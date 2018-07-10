@@ -13,6 +13,7 @@ namespace Nova {
         Engine& operator = (Engine&& other) = default;
 
         Renderer& renderer() { return *m_renderer; }
+        Window& window() { return *m_window; }
 
     private:
         friend class Window;
