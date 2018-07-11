@@ -1,3 +1,4 @@
+#pragma once
 #include "NovaEngine/GenericAllocator.h"
 
 namespace Nova {
