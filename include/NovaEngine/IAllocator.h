@@ -6,7 +6,7 @@ namespace Nova {
         size_t size;
     };
 
-    class GenericAllocator {
+    class IAllocator {
     public:
         virtual Allocation allocate(size_t size, size_t alignment) = 0;
         virtual void free(Allocation allocation) = 0;

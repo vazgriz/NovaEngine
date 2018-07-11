@@ -9,7 +9,7 @@ StackAllocator::StackAllocator(size_t offset, size_t size) {
 }
 
 Allocation StackAllocator::allocate(size_t size, size_t alignment) {
-    size_t ptr = GenericAllocator::align(m_ptr, alignment);
+    size_t ptr = IAllocator::align(m_ptr, alignment);
     size_t end = ptr + size;
     if (end <= m_offset + m_size) {
         m_stack.push_back(m_ptr);

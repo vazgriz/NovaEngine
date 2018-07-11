@@ -14,7 +14,7 @@ add_library(NovaEngine
     "src/Window.cpp"
     "src/QueueGraph.cpp"
     "src/RenderGraph.cpp"
-    "src/GenericAllocator.cpp"
+    "src/IAllocator.cpp"
     "src/LinearAllocator.cpp"
     "src/StackAllocator.cpp"
 )
