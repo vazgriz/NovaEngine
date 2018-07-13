@@ -13,7 +13,7 @@ Allocation LinearAllocator::allocate(size_t size, size_t alignment) {
     size_t end = ptr + size;
     if (end <= m_offset + m_size) {
         m_ptr = end;
-        return { ptr, size };
+        return { this, ptr, size };
     } else {
         return {};
     }

@@ -14,13 +14,14 @@ Allocation StackAllocator::allocate(size_t size, size_t alignment) {
     if (end <= m_offset + m_size) {
         m_stack.push_back(m_ptr);
         m_ptr = end;
-        return { ptr, size };
+        return { this, ptr, size };
     } else {
         return {};
     }
 }
 
 void StackAllocator::free(Allocation allocation) {
+    if (allocation.allocator == nullptr) return;
     m_ptr = m_stack.back();
     m_stack.pop_back();
 }

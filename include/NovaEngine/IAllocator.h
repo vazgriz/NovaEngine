@@ -1,7 +1,10 @@
 #pragma once
 
 namespace Nova {
+    class IAllocator;
+
     struct Allocation {
+        IAllocator* allocator;
         size_t offset;
         size_t size;
     };
