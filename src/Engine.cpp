@@ -4,6 +4,7 @@ using namespace Nova;
 
 Engine::Engine(Renderer& renderer) {
     m_renderer = &renderer;
+    m_memory = std::make_unique<Memory>(*this);
 }
 
 void Engine::addWindow(Window& window) {
