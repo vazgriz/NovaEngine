@@ -17,6 +17,7 @@ add_library(NovaEngine
     "src/IAllocator.cpp"
     "src/LinearAllocator.cpp"
     "src/StackAllocator.cpp"
+    "src/FreeListAllocator.cpp"
 )
 target_include_directories(NovaEngine
     PUBLIC "${PROJECT_SOURCE_DIR}/include"
