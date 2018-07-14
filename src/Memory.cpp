@@ -25,6 +25,11 @@ Memory::Page::Page(vk::Device& device, uint32_t type, size_t size) {
 
 MemoryAllocation Memory::Page::tryAllocate(size_t size) {
     Allocation allocation = m_allocator->allocate(size, m_alignment);
+
+    if (allocation.allocator == nullptr) {
+        return {};
+    }
+
     return { m_memory.get(), allocation.offset, allocation.size };
 }
 
