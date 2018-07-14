@@ -100,7 +100,7 @@ private:
         attachment.finalLayout = vk::ImageLayout::PresentSrcKhr;
         attachment.loadOp = vk::AttachmentLoadOp::DontCare;
         attachment.storeOp = vk::AttachmentStoreOp::Store;
-        attachment.samples = vk::SampleCountFlags::None;
+        attachment.samples = vk::SampleCountFlags::_1;
 
         vk::AttachmentReference attachmentRef = {};
         attachmentRef.attachment = 0;
