@@ -28,7 +28,9 @@ void QueueGraph::internalSetFrames(size_t frames) {
     m_frameCount = frames;
 
     for (auto& v : m_fences) {
-        vk::Fence::wait(m_engine->renderer().device(), v, true);
+        if (v.size() > 0) {
+            vk::Fence::wait(m_engine->renderer().device(), v, true);
+        }
     }
 
     m_fences.clear();
