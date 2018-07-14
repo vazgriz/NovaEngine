@@ -16,7 +16,7 @@ Allocation FreeListAllocator::allocate(size_t size, size_t alignment) {
         size_t start = IAllocator::align(it->offset, alignment);
         size_t end = start + size;
 
-        if (end < (it->offset + it->size)) {
+        if (end <= (it->offset + it->size)) {
             split(it, start, size);
             return { this, start, size };
         }
