@@ -12,7 +12,7 @@ Memory::Page::Page(vk::Device& device, uint32_t type, size_t size) {
     m_alignment = device.physicalDevice().properties().limits.bufferImageGranularity;
 
     m_memory = std::make_unique<vk::DeviceMemory>(device, info);
-    m_allocator = std::make_unique<FreeListAllocator>(0, 0);
+    m_allocator = std::make_unique<FreeListAllocator>(0, PAGE_SIZE);
 
     m_size = size;
 
