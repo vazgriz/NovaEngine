@@ -55,7 +55,7 @@ private:
     }
 
     void preSubmit() override {
-        m_index = m_swapchain->acquireNextImage(~0, m_acquireSemaphore.get(), nullptr);
+        m_swapchain->acquireNextImage(~0, m_acquireSemaphore.get(), nullptr, m_index);
     }
 
     std::vector<const vk::CommandBuffer*>& getCommands() override {
