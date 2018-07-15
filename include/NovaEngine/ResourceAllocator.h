@@ -35,8 +35,7 @@ namespace Nova {
         ResourceAllocator(ResourceAllocator&& other) = default;
         ResourceAllocator& operator = (ResourceAllocator&& other) = default;
     
-        Resource<T>& allocate(TCreateInfo info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) override;
-        void free(Resource<T>& resource) override;
+        Resource<T> allocate(TCreateInfo info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) override;
     
     private:
         Engine* m_engine;
@@ -44,7 +43,6 @@ namespace Nova {
         size_t m_pageSize;
 
         std::vector<std::vector<Page>> m_pages;
-        std::unordered_set<std::unique_ptr<Resource<T>>> m_resources;
 
         Allocation bind(T& resource, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred);
         Allocation tryBind(T& resource, vk::MemoryPropertyFlags flags);

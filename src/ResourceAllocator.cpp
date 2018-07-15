@@ -24,26 +24,13 @@ ResourceAllocator<T, TCreateInfo>::ResourceAllocator(Engine& engine, size_t page
 }
 
 template<typename T, typename TCreateInfo>
-Resource<T>& ResourceAllocator<T, TCreateInfo>::allocate(TCreateInfo info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) {
-    std::unique_ptr<Resource<T>> resource = std::make_unique<Resource<T>>(Resource<T>{ T(m_engine->renderer().device(), info) });
+Resource<T> ResourceAllocator<T, TCreateInfo>::allocate(TCreateInfo info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) {
+    Resource<T> resource = { T(m_engine->renderer().device(), info) };
 
-    Allocation allocation = bind(resource->resource, required, preferred);
-    resource->allocation = allocation;
+    Allocation allocation = bind(resource.resource, required, preferred);
+    resource.allocation = allocation;
 
-    auto result = m_resources.emplace(std::move(resource));
-    return **result.first;
-}
-
-template<typename T, typename TCreateInfo>
-void ResourceAllocator<T, TCreateInfo>::free(Resource<T>& resource) {
-    std::unordered_set<std::unique_ptr<Resource<T>>>::iterator it = std::find_if(m_resources.begin(), m_resources.end(), [&](const std::unique_ptr<Resource<T>>& ptr) {
-        return &resource == ptr.get();
-    });
-
-    if (it != m_resources.end()) {
-        resource.allocation.allocator->free(resource.allocation);
-        m_resources.erase(it);
-    }
+    return resource;
 }
 
 template<typename T, typename TCreateInfo>

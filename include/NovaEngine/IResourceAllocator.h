@@ -4,7 +4,14 @@
 
 namespace Nova {
     template <typename T>
-    struct Resource {
+    class Resource {
+    public:
+        Resource(const Resource& other) = delete;
+        Resource& operator = (const Resource& other) = delete;
+        Resource(Resource&& other) = default;
+        Resource& operator = (Resource&& other) = default;
+        ~Resource();
+
         T resource;
         Allocation allocation;
     };
@@ -12,7 +19,6 @@ namespace Nova {
     template <typename T, typename TCreateInfo>
     class IResourceAllocator {
     public:
-        virtual Resource<T>& allocate(TCreateInfo info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) = 0;
-        virtual void free(Resource<T>& resource) = 0;
+        virtual Resource<T> allocate(TCreateInfo info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) = 0;
     };
 }
