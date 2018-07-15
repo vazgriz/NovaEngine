@@ -1,9 +1,9 @@
-#include "NovaEngine/IResourceAllocator.h"
+#include "NovaEngine/IRawAllocator.h"
 
 using namespace Nova;
 
 template<typename T>
-Resource<T>::~Resource() {
+RawResource<T>::~RawResource() {
     if (allocation.allocator != nullptr) {
         allocation.allocator->free(allocation);
     }

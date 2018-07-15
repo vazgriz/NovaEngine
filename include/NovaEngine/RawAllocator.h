@@ -1,13 +1,13 @@
 #pragma once
 #include "NovaEngine/Memory.h"
 #include "NovaEngine/Engine.h"
-#include "NovaEngine/IResourceAllocator.h"
+#include "NovaEngine/IRawAllocator.h"
 #include "NovaEngine/FreeListAllocator.h"
 #include <unordered_set>
 
 namespace Nova {
     template<typename T, typename TCreateInfo>
-    class ResourceAllocator : public IResourceAllocator<T, TCreateInfo> {
+    class RawAllocator : public IRawAllocator<T, TCreateInfo> {
         class Page {
         public:
             Page(Memory& memory, MemoryAllocation allocation);
@@ -29,13 +29,13 @@ namespace Nova {
         };
 
     public:
-        ResourceAllocator(Engine& engine, size_t pageSize);
-        ResourceAllocator(const ResourceAllocator& other) = delete;
-        ResourceAllocator& operator = (const ResourceAllocator& other) = delete;
-        ResourceAllocator(ResourceAllocator&& other) = default;
-        ResourceAllocator& operator = (ResourceAllocator&& other) = default;
+        RawAllocator(Engine& engine, size_t pageSize);
+        RawAllocator(const RawAllocator& other) = delete;
+        RawAllocator& operator = (const RawAllocator& other) = delete;
+        RawAllocator(RawAllocator&& other) = default;
+        RawAllocator& operator = (RawAllocator&& other) = default;
     
-        Resource<T> allocate(TCreateInfo info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) override;
+        RawResource<T> allocate(TCreateInfo info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) override;
     
     private:
         Engine* m_engine;
@@ -47,7 +47,4 @@ namespace Nova {
         Allocation bind(T& resource, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred);
         Allocation tryBind(T& resource, vk::MemoryPropertyFlags flags);
     };
-
-    using BufferAllocator = ResourceAllocator<vk::Buffer, vk::BufferCreateInfo>;
-    using ImageAllocator = ResourceAllocator<vk::Image, vk::ImageCreateInfo>;
 }
