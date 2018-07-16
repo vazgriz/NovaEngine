@@ -164,6 +164,9 @@ int main() {
 
         Nova::Window window = Nova::Window(engine, 800, 600);
         Nova::QueueGraph graph = Nova::QueueGraph(engine, window.swapchain().images().size());
+
+        Nova::BufferAllocator allocator(engine, graph, 256 * 1024 * 1024);
+
         auto& node = graph.addNode<TestNode>(*renderer.graphicsQueue(), window.swapchain());
         graph.addExternalWait(node, node.acquireSemaphore(), vk::PipelineStageFlags::ColorAttachmentOutput);
         graph.addExternalSignal(node, node.renderSemaphore());
@@ -181,6 +184,7 @@ int main() {
             } else {
                 window.update();
                 graph.submit();
+                allocator.update();
             }
         }
     }
