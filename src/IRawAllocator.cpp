@@ -8,3 +8,6 @@ RawResource<T>::~RawResource() {
         allocation.allocator->free(allocation);
     }
 }
+
+template class RawResource<vk::Buffer>;
+template class RawResource<vk::Image>;
