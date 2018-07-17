@@ -64,6 +64,7 @@ namespace Nova {
         void submit();
         size_t frame() { return m_frame; }
         size_t completedFrames();
+        size_t frameCount() const { return m_frameCount; }
 
     private:
         Engine* m_engine;
