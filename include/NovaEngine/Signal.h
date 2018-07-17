@@ -46,14 +46,20 @@ namespace Nova {
             Slot& operator = (const Slot& other) = delete;
 
             Slot(Slot&& other) {
-                *this = std::move(other);
+                signal = other.signal;
+                other.signal = nullptr;
+                id = other.id;
                 signal->registerSlot(*this);
             }
 
             Slot& operator = (Slot&& other) {
+                if (valid()) {
+                    signal->disconnect(*this);
+                }
                 signal = other.signal;
                 other.signal = nullptr;
                 id = other.id;
+                signal->registerSlot(*this);
                 return *this;
             }
 
