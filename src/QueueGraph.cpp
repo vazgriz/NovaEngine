@@ -137,7 +137,7 @@ void QueueGraph::submit() {
     m_frame++;
 }
 
-size_t QueueGraph::completedFrames() {
+size_t QueueGraph::completedFrames() const {
     if (m_frameCount > m_frame) return 0;
     return m_frame - m_frameCount;
 }

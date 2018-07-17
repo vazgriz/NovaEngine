@@ -62,8 +62,8 @@ namespace Nova {
         void bake();
 
         void submit();
-        size_t frame() { return m_frame; }
-        size_t completedFrames();
+        size_t frame() const { return m_frame; }
+        size_t completedFrames() const;
         size_t frameCount() const { return m_frameCount; }
 
     private:
