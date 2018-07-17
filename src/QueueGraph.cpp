@@ -55,7 +55,7 @@ void QueueGraph::addEdge(QueueNode& start, QueueNode& end, vk::PipelineStageFlag
     auto& startInfo = m_nodes[&start];
     auto& endInfo = m_nodes[&end];
     startInfo.outNodes.push_back(&endInfo);
-    startInfo.info.waitDstStageMask.push_back(waitMask);
+    endInfo.info.waitDstStageMask.push_back(waitMask);
     endInfo.inNodes.push_back(&startInfo);
 }
 
