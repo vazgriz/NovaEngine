@@ -54,12 +54,12 @@ private:
         m_commandBuffers = m_commandPool->allocate(allocInfo);
     }
 
-    void preSubmit() override {
+    void preSubmit(size_t index) override {
         m_swapchain->acquireNextImage(~0, m_acquireSemaphore.get(), nullptr, m_index);
     }
 
-    std::vector<const vk::CommandBuffer*>& getCommands() override {
-        vk::CommandBuffer& commandBuffer = m_commandBuffers[m_index];
+    std::vector<const vk::CommandBuffer*>& getCommands(size_t index) override {
+        vk::CommandBuffer& commandBuffer = m_commandBuffers[index];
         commandBuffer.reset(vk::CommandBufferResetFlags::None);
 
         vk::CommandBufferBeginInfo beginInfo = {};
@@ -84,7 +84,7 @@ private:
         return m_commands;
     }
 
-    void postSubmit() override {
+    void postSubmit(size_t index) override {
         vk::PresentInfo info = {};
         info.swapchains = { *m_swapchain };
         info.imageIndices = { m_index };
