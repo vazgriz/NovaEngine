@@ -30,7 +30,7 @@ MemoryAllocation Memory::Page::tryAllocate(size_t size) {
         return {};
     }
 
-    return { m_memory.get(), allocation.offset, allocation.size };
+    return { this, allocation.offset, allocation.size };
 }
 
 void Memory::Page::free(MemoryAllocation allocation) {
@@ -62,9 +62,9 @@ MemoryAllocation Memory::allocate(uint32_t type, size_t size) {
 void Memory::free(MemoryAllocation allocation) {
     if (allocation.memory == nullptr) return;
 
-    uint32_t type = allocation.memory->typeIndex();
+    uint32_t type = allocation.memory->memory().typeIndex();
     for (auto& page : m_pages[type]) {
-        if (&page.memory() == allocation.memory) {
+        if (&page == allocation.memory) {
             page.free(allocation);
         }
     }

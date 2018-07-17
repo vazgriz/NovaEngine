@@ -62,7 +62,7 @@ Allocation RawAllocator<T, TCreateInfo>::tryBind(T& resource, vk::MemoryProperty
                 for (auto& page : m_pages[i]) {
                     Allocation allocation = page.allocator().allocate(requirements.size, requirements.alignment);
                     if (allocation.allocator != nullptr) {
-                        resource.bind(page.memory(), allocation.offset);
+                        resource.bind(page.memory().memory(), allocation.offset);
                         return allocation;
                     }
                 }
@@ -74,7 +74,7 @@ Allocation RawAllocator<T, TCreateInfo>::tryBind(T& resource, vk::MemoryProperty
                     Page& newPage = m_pages[i].back();
                     Allocation allocation = newPage.allocator().allocate(requirements.size, requirements.alignment);
                     if (allocation.allocator != nullptr) {
-                        resource.bind(newPage.memory(), allocation.offset);
+                        resource.bind(newPage.memory().memory(), allocation.offset);
                         return allocation;
                     }
                 }

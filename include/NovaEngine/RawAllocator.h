@@ -17,7 +17,7 @@ namespace Nova {
             Page& operator = (Page&& other) = default;
             ~Page();
 
-            vk::DeviceMemory& memory() const { return *m_allocation.memory; }
+            Memory::Page& memory() const { return *m_allocation.memory; }
             size_t offset() const { return m_allocation.offset; }
             size_t size() const { return m_allocation.size; }
             FreeListAllocator& allocator() const { return *m_allocator; }

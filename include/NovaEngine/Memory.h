@@ -6,13 +6,10 @@
 namespace Nova {
     class Engine;
 
-    struct MemoryAllocation {
-        vk::DeviceMemory* memory;
-        size_t offset;
-        size_t size;
-    };
+    struct MemoryAllocation;
 
     class Memory {
+    public:
         class Page {
         public:
             Page(vk::Device& device, uint32_t type, size_t size);
@@ -33,7 +30,6 @@ namespace Nova {
             void* m_mapping = nullptr;
         };
 
-    public:
         Memory(Engine& engine);
         Memory(const Memory& other) = delete;
         Memory& operator = (const Memory& other) = delete;
@@ -49,5 +45,11 @@ namespace Nova {
         Engine* m_engine;
         vk::MemoryProperties m_properties;
         std::vector<std::vector<Page>> m_pages;
+    };
+    
+    struct MemoryAllocation {
+        Memory::Page* memory;
+        size_t offset;
+        size_t size;
     };
 }
