@@ -16,6 +16,8 @@ namespace Nova {
         StagingAllocator& operator = (StagingAllocator&& other) = default;
         ~StagingAllocator();
 
+        vk::Buffer& buffer() const { return *m_buffer; }
+
         size_t stage(void* data, size_t size);
         void reset();
 
