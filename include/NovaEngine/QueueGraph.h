@@ -59,6 +59,7 @@ namespace Nova {
         void addExternalSignal(QueueNode& node, vk::Semaphore& semaphore);
 
         void setFrames(size_t frames);
+        Signal<size_t>& onFrameCountChanged() { return *m_onFrameCountChanged; }
         void bake();
 
         void submit();
@@ -75,6 +76,7 @@ namespace Nova {
         std::vector<std::vector<vk::Fence>> m_fences;
         size_t m_frameCount = 0;
         size_t m_frame = 1;
+        std::unique_ptr<Signal<size_t>> m_onFrameCountChanged;
 
         void createSemaphores();
         void internalSetFrames(size_t frames);

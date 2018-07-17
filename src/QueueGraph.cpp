@@ -9,6 +9,7 @@ QueueNode::QueueNode(const vk::Queue& queue) {
 QueueGraph::QueueGraph(Engine& engine, size_t frames) {
     m_engine = &engine;
     m_renderer = &engine.renderer();
+    m_onFrameCountChanged = std::make_unique<Signal<size_t>>();
 
     setFrames(frames);
 }
@@ -46,6 +47,8 @@ void QueueGraph::internalSetFrames(size_t frames) {
             nodeFences.emplace_back(m_engine->renderer().device(), info);
         }
     }
+
+    m_onFrameCountChanged->emit(m_frameCount);
 }
 
 void QueueGraph::addEdge(QueueNode& start, QueueNode& end, vk::PipelineStageFlags waitMask) {
