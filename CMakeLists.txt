@@ -21,6 +21,7 @@ add_library(NovaEngine
     "src/FreeListAllocator.cpp"
     "src/IRawAllocator.cpp"
     "src/RawAllocator.cpp"
+    "src/IResourceAllocator.cpp"
     "src/Allocator.cpp"
 )
 target_include_directories(NovaEngine
