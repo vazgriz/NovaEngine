@@ -20,8 +20,17 @@ namespace Nova {
 
         const vk::Queue& queue() const { return *m_queue; }
 
+    protected:
+        vk::CommandPool& commandPool() { return *m_commandPool; }
+        std::vector<vk::CommandBuffer>& commandBuffers() { return m_commandBuffers; }
+
     private:
         const vk::Queue* m_queue;
+        std::unique_ptr<vk::CommandPool> m_commandPool;
+        std::vector<vk::CommandBuffer> m_commandBuffers;
+
+        void createCommandPool();
+        void createCommandBuffers(size_t count);
     };
 
     class QueueGraph {

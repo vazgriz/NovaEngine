@@ -8,7 +8,6 @@ public:
     TestNode(const vk::Queue& queue, vk::Swapchain& swapchain) : QueueNode(queue) {
         setSwapchain(swapchain);
         createSemaphores();
-        createCommandPool();
     }
 
     void setSwapchain(vk::Swapchain& swapchain) {
@@ -26,8 +25,6 @@ private:
     std::unique_ptr<vk::Semaphore> m_acquireSemaphore;
     std::unique_ptr<vk::Semaphore> m_renderSemaphore;
     uint32_t m_index;
-    std::unique_ptr<vk::CommandPool> m_commandPool;
-    std::vector<vk::CommandBuffer> m_commandBuffers;
     std::vector<const vk::CommandBuffer*> m_commands;
     std::unique_ptr<vk::RenderPass> m_renderPass;
     std::vector<vk::ImageView> m_imageViews;
@@ -40,26 +37,12 @@ private:
         m_renderSemaphore = std::make_unique<vk::Semaphore>(queue().device(), info);
     }
 
-    void createCommandPool() {
-        vk::CommandPoolCreateInfo info = {};
-        info.queueFamilyIndex = queue().familyIndex();
-        info.flags = vk::CommandPoolCreateFlags::ResetCommandBuffer;
-
-        m_commandPool = std::make_unique<vk::CommandPool>(queue().device(), info);
-
-        vk::CommandBufferAllocateInfo allocInfo = {};
-        allocInfo.commandPool = m_commandPool.get();
-        allocInfo.commandBufferCount = static_cast<uint32_t>(m_swapchain->images().size());
-
-        m_commandBuffers = m_commandPool->allocate(allocInfo);
-    }
-
     void preSubmit(size_t index) override {
         m_swapchain->acquireNextImage(~0, m_acquireSemaphore.get(), nullptr, m_index);
     }
 
     std::vector<const vk::CommandBuffer*>& getCommands(size_t index) override {
-        vk::CommandBuffer& commandBuffer = m_commandBuffers[index];
+        vk::CommandBuffer& commandBuffer = commandBuffers()[index];
         commandBuffer.reset(vk::CommandBufferResetFlags::None);
 
         vk::CommandBufferBeginInfo beginInfo = {};

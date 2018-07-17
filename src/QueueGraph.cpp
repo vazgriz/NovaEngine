@@ -4,6 +4,24 @@ using namespace Nova;
 
 QueueNode::QueueNode(const vk::Queue& queue) {
     m_queue = &queue;
+
+    createCommandPool();
+}
+
+void QueueNode::createCommandPool() {
+    vk::CommandPoolCreateInfo info = {};
+    info.queueFamilyIndex = m_queue->familyIndex();
+    info.flags = vk::CommandPoolCreateFlags::ResetCommandBuffer;
+
+    m_commandPool = std::make_unique<vk::CommandPool>(m_queue->device(), info);
+}
+
+void QueueNode::createCommandBuffers(size_t count) {
+    vk::CommandBufferAllocateInfo info = {};
+    info.commandBufferCount = static_cast<uint32_t>(count);
+    info.commandPool = m_commandPool.get();
+
+    m_commandBuffers = m_commandPool->allocate(info);
 }
 
 QueueGraph::QueueGraph(Engine& engine, size_t frames) {
@@ -46,6 +64,10 @@ void QueueGraph::internalSetFrames(size_t frames) {
 
             nodeFences.emplace_back(m_engine->renderer().device(), info);
         }
+    }
+
+    for (auto& node : m_nodeList) {
+        node->node->createCommandBuffers(m_frameCount);
     }
 
     m_onFrameCountChanged->emit(m_frameCount);
@@ -114,7 +136,7 @@ void QueueGraph::submit() {
     size_t index = m_frame % m_fences.size();
 
     for (auto node : m_nodeList) {
-        node->node->preSubmit();
+        node->node->preSubmit(index);
     }
 
     for (size_t i = 0; i < m_nodeList.size(); i++) {
@@ -124,7 +146,7 @@ void QueueGraph::submit() {
         m_fences[index][i].wait();
         m_fences[index][i].reset();
 
-        auto commandBuffers = node->node->getCommands();
+        auto commandBuffers = node->node->getCommands(index);
 
         for (auto commandBuffer : commandBuffers) {
             node->info.commandBuffers.push_back(*commandBuffer);
@@ -134,7 +156,7 @@ void QueueGraph::submit() {
     }
 
     for (auto node : m_nodeList) {
-        node->node->postSubmit();
+        node->node->postSubmit(index);
     }
 
     m_frame++;
