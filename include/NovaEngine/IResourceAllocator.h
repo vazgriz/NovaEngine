@@ -1,5 +1,6 @@
 #pragma once
 #include "NovaEngine/IRawAllocator.h"
+#include "NovaEngine/Memory.h"
 
 namespace Nova {
     template<typename T, typename TCreateInfo>
@@ -16,6 +17,7 @@ namespace Nova {
         ~Resource();
 
         T& resource() const { return m_resource->resource; }
+        Memory::Page& page() const { return *m_resource->page; }
         void registerUsage(size_t frame);
 
     private:
