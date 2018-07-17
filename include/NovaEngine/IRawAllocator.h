@@ -1,6 +1,7 @@
 #pragma once
 #include <VulkanWrapper/VulkanWrapper.h>
 #include "NovaEngine/IAllocator.h"
+#include "NovaEngine/Memory.h"
 
 namespace Nova {
     template <typename T>
@@ -14,6 +15,7 @@ namespace Nova {
 
         T resource;
         Allocation allocation;
+        Memory::Page* page;
     };
 
     template <typename T, typename TCreateInfo>

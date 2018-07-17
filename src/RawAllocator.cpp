@@ -27,21 +27,22 @@ template<typename T, typename TCreateInfo>
 RawResource<T> RawAllocator<T, TCreateInfo>::allocate(TCreateInfo info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) {
     RawResource<T> resource = { T(m_engine->renderer().device(), info) };
 
-    Allocation allocation = bind(resource.resource, required, preferred);
-    resource.allocation = allocation;
+    BindResult result = bind(resource.resource, required, preferred);
+    resource.allocation = result.allocation;
+    resource.page = result.page;
 
     return resource;
 }
 
 template<typename T, typename TCreateInfo>
-Allocation RawAllocator<T, TCreateInfo>::bind(T& resource, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) {
-    Allocation result = tryBind(resource, required | preferred);
-    if (result.allocator != nullptr) {
+typename RawAllocator<T, TCreateInfo>::BindResult RawAllocator<T, TCreateInfo>::bind(T& resource, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) {
+    BindResult result = tryBind(resource, required | preferred);
+    if (result.allocation.allocator != nullptr) {
         return result;
     }
 
     result = tryBind(resource, required);
-    if (result.allocator != nullptr) {
+    if (result.allocation.allocator != nullptr) {
         return result;
     }
 
@@ -49,7 +50,7 @@ Allocation RawAllocator<T, TCreateInfo>::bind(T& resource, vk::MemoryPropertyFla
 }
 
 template<typename T, typename TCreateInfo>
-Allocation RawAllocator<T, TCreateInfo>::tryBind(T& resource, vk::MemoryPropertyFlags flags) {
+typename RawAllocator<T, TCreateInfo>::BindResult RawAllocator<T, TCreateInfo>::tryBind(T& resource, vk::MemoryPropertyFlags flags) {
     vk::MemoryRequirements requirements = resource.requirements();
     auto& types = m_memory->properties().memoryTypes;
 
@@ -63,7 +64,7 @@ Allocation RawAllocator<T, TCreateInfo>::tryBind(T& resource, vk::MemoryProperty
                     Allocation allocation = page.allocator().allocate(requirements.size, requirements.alignment);
                     if (allocation.allocator != nullptr) {
                         resource.bind(page.memory().memory(), allocation.offset);
-                        return allocation;
+                        return { allocation, &page.memory() };
                     }
                 }
 
@@ -75,7 +76,7 @@ Allocation RawAllocator<T, TCreateInfo>::tryBind(T& resource, vk::MemoryProperty
                     Allocation allocation = newPage.allocator().allocate(requirements.size, requirements.alignment);
                     if (allocation.allocator != nullptr) {
                         resource.bind(newPage.memory().memory(), allocation.offset);
-                        return allocation;
+                        return { allocation, &newPage.memory() };
                     }
                 }
             }

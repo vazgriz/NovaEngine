@@ -28,6 +28,11 @@ namespace Nova {
             std::unique_ptr<FreeListAllocator> m_allocator;
         };
 
+        struct BindResult {
+            Allocation allocation;
+            Memory::Page* page;
+        };
+
     public:
         RawAllocator(Engine& engine, size_t pageSize);
         RawAllocator(const RawAllocator& other) = delete;
@@ -44,7 +49,7 @@ namespace Nova {
 
         std::vector<std::vector<Page>> m_pages;
 
-        Allocation bind(T& resource, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred);
-        Allocation tryBind(T& resource, vk::MemoryPropertyFlags flags);
+        BindResult bind(T& resource, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred);
+        BindResult tryBind(T& resource, vk::MemoryPropertyFlags flags);
     };
 }
