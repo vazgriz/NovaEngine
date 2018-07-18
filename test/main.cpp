@@ -2,12 +2,27 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <NovaEngine/NovaEngine.h>
+#include <glm/glm.hpp>
+
+struct Vertex {
+    glm::vec3 pos;
+    glm::vec3 color;
+};
+
+std::vector<Vertex> vertices = {
+    { { -1.0f,  1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } },
+    { {  0.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } },
+    { {  1.0f,  1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } }
+};
 
 class TestNode : public Nova::QueueNode {
 public:
-    TestNode(const vk::Queue& queue, vk::Swapchain& swapchain) : QueueNode(queue) {
+    TestNode(const vk::Queue& queue, vk::Swapchain& swapchain, Nova::BufferAllocator& allocator, Nova::TransferNode& transferNode) : QueueNode(queue) {
+        m_allocator = &allocator;
+        m_transferNode = &transferNode;
         setSwapchain(swapchain);
         createSemaphores();
+        createVertexBuffer();
     }
 
     void setSwapchain(vk::Swapchain& swapchain) {
@@ -22,6 +37,8 @@ public:
 
 private:
     vk::Swapchain* m_swapchain;
+    Nova::BufferAllocator* m_allocator;
+    Nova::TransferNode* m_transferNode;
     std::unique_ptr<vk::Semaphore> m_acquireSemaphore;
     std::unique_ptr<vk::Semaphore> m_renderSemaphore;
     uint32_t m_index;
@@ -29,6 +46,7 @@ private:
     std::unique_ptr<vk::RenderPass> m_renderPass;
     std::vector<vk::ImageView> m_imageViews;
     std::vector<vk::Framebuffer> m_framebuffers;
+    std::unique_ptr<Nova::Buffer> m_vertexBuffer;
 
     void createSemaphores() {
         vk::SemaphoreCreateInfo info = {};
@@ -130,6 +148,18 @@ private:
             m_framebuffers.emplace_back(queue().device(), info);
         }
     }
+
+    void createVertexBuffer() {
+        vk::BufferCreateInfo info = {};
+        info.size = vertices.size() * sizeof(Vertex);
+        info.usage = vk::BufferUsageFlags::VertexBuffer | vk::BufferUsageFlags::TransferDst;
+
+        m_vertexBuffer = std::make_unique<Nova::Buffer>(m_allocator->allocate(info, vk::MemoryPropertyFlags::DeviceLocal, {}));
+
+        vk::BufferCopy copy = {};
+        copy.size = vertices.size() * sizeof(Vertex);
+        m_transferNode->transfer(vertices.data(), *m_vertexBuffer, copy);
+    }
 };
 
 int main() {
@@ -145,13 +175,15 @@ int main() {
 
         Nova::Engine engine = Nova::Engine(renderer);
 
+        std::unique_ptr<Nova::BufferAllocator> allocator;
+
         Nova::Window window = Nova::Window(engine, 800, 600);
         Nova::QueueGraph graph = Nova::QueueGraph(engine, window.swapchain().images().size());
 
-        Nova::BufferAllocator allocator(engine, graph, 256 * 1024 * 1024);
+        allocator = std::make_unique<Nova::BufferAllocator>(engine, graph, 256 * 1024 * 1024);
 
-        auto& node = graph.addNode<TestNode>(*renderer.graphicsQueue(), window.swapchain());
         auto& transferNode = graph.addNode<Nova::TransferNode>(engine, *renderer.graphicsQueue(), graph, 64 * 1024 * 1024);
+        auto& node = graph.addNode<TestNode>(*renderer.graphicsQueue(), window.swapchain(), *allocator, transferNode);
 
         graph.addEdge(transferNode, node, vk::PipelineStageFlags::VertexShader);
         graph.addExternalWait(node, node.acquireSemaphore(), vk::PipelineStageFlags::ColorAttachmentOutput);
@@ -170,7 +202,7 @@ int main() {
             } else {
                 window.update();
                 graph.submit();
-                allocator.update();
+                allocator->update();
             }
         }
     }
