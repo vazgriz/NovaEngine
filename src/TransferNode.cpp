@@ -45,7 +45,9 @@ void TransferNode::resize(size_t frames) {
     } else if (frames < m_allocators.size()) {
         m_allocators.erase(m_allocators.begin() + frames);
     } else {
-        m_allocators.emplace_back(*m_engine, m_pageSize, m_type);
+        for (size_t i = m_allocators.size(); i < frames; i++) {
+            m_allocators.emplace_back(*m_engine, m_pageSize, m_type);
+        }
     }
 }
 
