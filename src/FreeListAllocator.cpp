@@ -28,8 +28,23 @@ Allocation FreeListAllocator::allocate(size_t size, size_t alignment) {
 void FreeListAllocator::free(Allocation allocation) {
     if (allocation.allocator == nullptr) return;
 
+    auto it = m_nodes.begin();
+
+    if (it == m_nodes.end()) {
+        m_nodes.push_back({ allocation.offset, allocation.size });
+        return;
+    }
+
+    if (allocation.offset < it->offset) {
+        m_nodes.push_front({ allocation.offset, allocation.size });
+        auto begin = m_nodes.begin();
+        merge(begin, it);
+        return;
+    }
+
     for (auto it = m_nodes.begin(); it != m_nodes.end(); it++) {
         if (it->offset < allocation.offset) {
+            merge(it, allocation);
             return;
         }
     }
