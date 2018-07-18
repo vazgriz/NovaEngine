@@ -326,9 +326,11 @@ int main() {
 
         Nova::RenderGraph renderGraph = Nova::RenderGraph(engine);
 
-        auto& transferNode = graph.addNode<Nova::TransferNode>(engine, *renderer.graphicsQueue(), graph, renderGraph, 64 * 1024 * 1024);
-        auto& node = graph.addNode<TestNode>(*renderer.graphicsQueue(), window.swapchain(), allocator, transferNode, renderGraph);
+        auto transferNode = Nova::TransferNode(engine, *renderer.graphicsQueue(), graph, renderGraph, 64 * 1024 * 1024);
+        auto node = TestNode(*renderer.graphicsQueue(), window.swapchain(), allocator, transferNode, renderGraph);
 
+        graph.addNode(transferNode);
+        graph.addNode(node);
         graph.addEdge(transferNode, node, vk::PipelineStageFlags::VertexInput);
         graph.addExternalWait(node, node.acquireSemaphore(), vk::PipelineStageFlags::ColorAttachmentOutput);
         graph.addExternalSignal(node, node.renderSemaphore());
@@ -352,6 +354,8 @@ int main() {
                 allocator.update(graph.completedFrames());
             }
         }
+
+        graph.wait();
     }
 
     glfwTerminate();

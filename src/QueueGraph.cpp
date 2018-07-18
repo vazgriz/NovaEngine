@@ -32,10 +32,16 @@ QueueGraph::QueueGraph(Engine& engine, size_t frames) {
     setFrames(frames);
 }
 
-QueueGraph::~QueueGraph() {
+void QueueGraph::wait() {
     for (auto& fences : m_fences) {
         vk::Fence::wait(m_engine->renderer().device(), fences, true);
     }
+}
+
+void QueueGraph::addNode(QueueNode& node) {
+    m_nodes[&node] = { &node };
+    Node& internalNode = m_nodes[&node];
+    internalNode.queue = internalNode.node->m_queue;
 }
 
 void QueueGraph::setFrames(size_t frames) {

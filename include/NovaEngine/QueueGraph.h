@@ -12,6 +12,10 @@ namespace Nova {
         friend class QueueGraph;
     public:
         QueueNode(const vk::Queue& queue);
+        QueueNode(const QueueNode& other) = delete;
+        QueueNode& operator = (const QueueNode& other) = delete;
+        QueueNode(QueueNode&& other) = default;
+        QueueNode& operator = (QueueNode&& other) = default;
         virtual ~QueueNode() = default;
 
         virtual void preSubmit(size_t index) {}
@@ -36,7 +40,7 @@ namespace Nova {
     class QueueGraph {
     public:
         struct Node {
-            std::unique_ptr<QueueNode> node;
+            QueueNode* node;
             const vk::Queue* queue;
             std::vector<Node*> inNodes;
             std::vector<Node*> outNodes;
@@ -51,17 +55,8 @@ namespace Nova {
         QueueGraph& operator = (const QueueGraph& other) = delete;
         QueueGraph(QueueGraph&& other) = default;
         QueueGraph& operator = (QueueGraph&& other) = default;
-        ~QueueGraph();
 
-        template<typename T, class... Types>
-        T& addNode(Types&&... args) {
-            std::unique_ptr<T> temp = std::make_unique<T>(std::forward<Types>(args)...);
-            T* ptr = temp.get();
-            m_nodes[ptr] = { std::move(temp) };
-            Node& node = m_nodes[ptr];
-            node.queue = node.node->m_queue;
-            return *static_cast<T*>(node.node.get());
-        }
+        void addNode(QueueNode& node);
 
         void addEdge(QueueNode& start, QueueNode& end, vk::PipelineStageFlags waitMask);
         void addExternalWait(QueueNode& node, vk::Semaphore& semaphore, vk::PipelineStageFlags stageMask);
@@ -75,6 +70,7 @@ namespace Nova {
         size_t frame() const { return m_frame; }
         size_t completedFrames() const;
         size_t frameCount() const { return m_frameCount; }
+        void wait();
 
     private:
         Engine* m_engine;
