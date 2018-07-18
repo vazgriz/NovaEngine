@@ -4,3 +4,4 @@
 #include <NovaEngine/QueueGraph.h>
 #include <NovaEngine/RenderGraph.h>
 #include <NovaEngine/Allocator.h>
+#include <NovaEngine/TransferNode.h>

@@ -24,6 +24,7 @@ add_library(NovaEngine
     "src/IResourceAllocator.cpp"
     "src/Allocator.cpp"
     "src/StagingAllocator.cpp"
+    "src/TransferNode.cpp"
 )
 target_include_directories(NovaEngine
     PUBLIC "${PROJECT_SOURCE_DIR}/include"

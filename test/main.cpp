@@ -151,6 +151,9 @@ int main() {
         Nova::BufferAllocator allocator(engine, graph, 256 * 1024 * 1024);
 
         auto& node = graph.addNode<TestNode>(*renderer.graphicsQueue(), window.swapchain());
+        auto& transferNode = graph.addNode<Nova::TransferNode>(engine, *renderer.graphicsQueue(), graph, 64 * 1024 * 1024);
+
+        graph.addEdge(transferNode, node, vk::PipelineStageFlags::VertexShader);
         graph.addExternalWait(node, node.acquireSemaphore(), vk::PipelineStageFlags::ColorAttachmentOutput);
         graph.addExternalSignal(node, node.renderSemaphore());
         graph.bake();
