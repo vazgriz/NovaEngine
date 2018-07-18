@@ -39,9 +39,11 @@ void QueueGraph::wait() {
 }
 
 void QueueGraph::addNode(QueueNode& node) {
-    m_nodes[&node] = { &node };
-    Node& internalNode = m_nodes[&node];
-    internalNode.queue = internalNode.node->m_queue;
+    auto insert = m_nodes.insert({ &node, { &node } });
+    if (insert.second) {    //if just inserted
+        Node& internalNode = m_nodes[&node];
+        internalNode.queue = internalNode.node->m_queue;
+    }
 }
 
 void QueueGraph::setFrames(size_t frames) {
