@@ -89,7 +89,7 @@ void Window::createSurface() {
     glfwCreateWindowSurface(m_engine->renderer().instance().handle(), m_window.get(), nullptr, &surface);
     m_surface = std::make_unique<vk::Surface>(m_engine->renderer().instance(), surface);
 
-    bool supported = m_surface->supported(*m_physicalDevice, m_renderer->presentQueue()->familyIndex());
+    bool supported = m_surface->supported(*m_physicalDevice, m_renderer->presentQueue().familyIndex());
     if (!supported) {
         throw std::runtime_error("Surface is not supported on this Physical Device");
     }
@@ -156,7 +156,7 @@ void Window::createSwapchain() {
     info.imageArrayLayers = 1;
     info.imageUsage = vk::ImageUsageFlags::ColorAttachment;
 
-    std::vector<uint32_t> familyIndices = { m_renderer->graphicsQueue()->familyIndex(), m_renderer->presentQueue()->familyIndex() };
+    std::vector<uint32_t> familyIndices = { m_renderer->graphicsQueue().familyIndex(), m_renderer->presentQueue().familyIndex() };
     if (familyIndices[0] != familyIndices[1]) {
         info.queueFamilyIndices = std::move(familyIndices);
         info.imageSharingMode = vk::SharingMode::Concurrent;
