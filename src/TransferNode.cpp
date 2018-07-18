@@ -67,6 +67,21 @@ const std::vector<const vk::CommandBuffer*>& TransferNode::getCommands(size_t in
         if (transfer.buffer != nullptr) {
             commandBuffer.copyBuffer(allocator.buffer(), transfer.buffer->resource(), transfer.bufferCopy);
         } else if (transfer.image != nullptr) {
+            vk::ImageMemoryBarrier barrier = {};
+            barrier.image = &transfer.image->resource();
+            barrier.oldLayout = vk::ImageLayout::Undefined;
+            barrier.newLayout = transfer.imageLayout;
+            barrier.srcAccessMask = {};
+            barrier.dstAccessMask = vk::AccessFlags::TransferWrite;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.subresourceRange.aspectMask = transfer.bufferImageCopy.imageSubresource.aspectMask;
+            barrier.subresourceRange.baseArrayLayer = transfer.bufferImageCopy.imageSubresource.baseArrayLayer;
+            barrier.subresourceRange.layerCount = transfer.bufferImageCopy.imageSubresource.layerCount;
+            barrier.subresourceRange.baseMipLevel = transfer.bufferImageCopy.imageSubresource.mipLevel;
+            barrier.subresourceRange.levelCount = 1;
+
+            commandBuffer.pipelineBarrier(vk::PipelineStageFlags::TopOfPipe, vk::PipelineStageFlags::Transfer, {}, {}, {}, { barrier });
             commandBuffer.copyBufferToImage(allocator.buffer(), transfer.image->resource(), transfer.imageLayout, transfer.bufferImageCopy);
         }
     }
