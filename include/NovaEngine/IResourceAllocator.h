@@ -34,7 +34,7 @@ namespace Nova {
     class IResourceAllocator {
     public:
         virtual Resource<T, TCreateInfo> allocate(const TCreateInfo& info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) = 0;
-        virtual void update() = 0;
+        virtual void update(size_t completed) = 0;
         virtual void registerUsage(RawResource<T>* resource, size_t frame) = 0;
         virtual void free(RawResource<T>* resource) = 0;
     };

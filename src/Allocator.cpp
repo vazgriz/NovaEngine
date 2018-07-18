@@ -3,9 +3,8 @@
 using namespace Nova;
 
 template<typename T, typename TCreateInfo>
-Allocator<T, TCreateInfo>::Allocator(Engine& engine, QueueGraph& queueGraph, size_t pageSize) : m_allocator(engine, pageSize) {
+Allocator<T, TCreateInfo>::Allocator(Engine& engine, size_t pageSize) : m_allocator(engine, pageSize) {
     m_engine = &engine;
-    m_queueGraph = &queueGraph;
 }
 
 template<typename T, typename TCreateInfo>
@@ -28,9 +27,7 @@ void Allocator<T, TCreateInfo>::free(RawResource<T>* resource) {
 }
 
 template<typename T, typename TCreateInfo>
-void Allocator<T, TCreateInfo>::update() {
-    size_t completed = m_queueGraph->completedFrames();
-
+void Allocator<T, TCreateInfo>::update(size_t completed) {
     auto it = m_dead.begin();
     while (it != m_dead.end()) {
         if ((*it)->usage <= completed) {

@@ -305,15 +305,13 @@ int main() {
 
         Nova::Engine engine = Nova::Engine(renderer);
 
-        std::unique_ptr<Nova::BufferAllocator> allocator;
+        Nova::BufferAllocator allocator = Nova::BufferAllocator(engine, 256 * 1024 * 1024);
 
         Nova::Window window = Nova::Window(engine, 800, 600);
         Nova::QueueGraph graph = Nova::QueueGraph(engine, window.swapchain().images().size());
 
-        allocator = std::make_unique<Nova::BufferAllocator>(engine, graph, 256 * 1024 * 1024);
-
         auto& transferNode = graph.addNode<Nova::TransferNode>(engine, *renderer.graphicsQueue(), graph, 64 * 1024 * 1024);
-        auto& node = graph.addNode<TestNode>(*renderer.graphicsQueue(), window.swapchain(), *allocator, transferNode);
+        auto& node = graph.addNode<TestNode>(*renderer.graphicsQueue(), window.swapchain(), allocator, transferNode);
 
         graph.addEdge(transferNode, node, vk::PipelineStageFlags::VertexShader);
         graph.addExternalWait(node, node.acquireSemaphore(), vk::PipelineStageFlags::ColorAttachmentOutput);
@@ -333,7 +331,7 @@ int main() {
                 glfwWaitEvents();
             } else {
                 graph.submit();
-                allocator->update();
+                allocator.update(graph.completedFrames());
             }
         }
     }
