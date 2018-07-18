@@ -14,6 +14,7 @@ StagingAllocator::StagingAllocator(Engine& engine, size_t pageSize, uint32_t typ
     info.size = pageSize;
 
     m_buffer = std::make_unique<vk::Buffer>(m_engine->renderer().device(), info);
+    m_buffer->bind(m_page.memory->memory(), m_page.offset);
 }
 
 StagingAllocator::~StagingAllocator() {
