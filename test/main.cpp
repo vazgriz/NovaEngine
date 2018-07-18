@@ -329,7 +329,7 @@ int main() {
         auto& transferNode = graph.addNode<Nova::TransferNode>(engine, *renderer.graphicsQueue(), graph, renderGraph, 64 * 1024 * 1024);
         auto& node = graph.addNode<TestNode>(*renderer.graphicsQueue(), window.swapchain(), allocator, transferNode, renderGraph);
 
-        graph.addEdge(transferNode, node, vk::PipelineStageFlags::VertexShader);
+        graph.addEdge(transferNode, node, vk::PipelineStageFlags::VertexInput);
         graph.addExternalWait(node, node.acquireSemaphore(), vk::PipelineStageFlags::ColorAttachmentOutput);
         graph.addExternalSignal(node, node.renderSemaphore());
         graph.bake();
