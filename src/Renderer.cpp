@@ -88,8 +88,10 @@ void Renderer::createInstance(const std::string& appName, const std::vector<std:
 void Renderer::createDevice(const vk::PhysicalDevice& physicalDevice, const std::vector<std::string>& extensions, vk::PhysicalDeviceFeatures* features) {
     uint32_t graphicsFamily;
     uint32_t presentFamily;
+    uint32_t transferFamily;
     bool graphicsFound = false;
     bool presentFound = false;
+    bool transferFound = false;
 
     for (uint32_t i = 0; i < physicalDevice.queueFamilies().size(); i++) {
         auto& family = physicalDevice.queueFamilies()[i];
@@ -105,10 +107,22 @@ void Renderer::createDevice(const vk::PhysicalDevice& physicalDevice, const std:
             presentFound = true;
         }
 
-        if (graphicsFound && presentFound) break;
+        if (!transferFound && family.queueCount > 0
+            && (family.queueFlags & vk::QueueFlags::Transfer) == vk::QueueFlags::Transfer
+            && (family.queueFlags & vk::QueueFlags::Graphics) == vk::QueueFlags::None
+            && (family.queueFlags & vk::QueueFlags::Compute) == vk::QueueFlags::None) {
+            transferFound = true;
+            transferFamily = i;
+        }
+
+        if (graphicsFound && presentFound && transferFound) break;
     }
 
-    std::unordered_set<uint32_t> families = { graphicsFamily, presentFamily };
+    if (!transferFound) {
+        transferFamily = graphicsFamily;
+    }
+
+    std::unordered_set<uint32_t> families = { graphicsFamily, presentFamily, transferFamily };
     std::vector<vk::DeviceQueueCreateInfo> queueInfos;
     float priority = 1;
 
@@ -136,4 +150,5 @@ void Renderer::createDevice(const vk::PhysicalDevice& physicalDevice, const std:
 
     m_graphicsQueue = &m_device->getQueue(graphicsFamily, 0);
     m_presentQueue = &m_device->getQueue(presentFamily, 0);
+    m_transferQueue = &m_device->getQueue(transferFamily, 0);
 }

@@ -22,6 +22,7 @@ namespace Nova {
 
         const vk::Queue* graphicsQueue() const { return m_graphicsQueue; }
         const vk::Queue* presentQueue() const { return m_presentQueue; }
+        const vk::Queue* transferQueue() const { return m_transferQueue; }
 
         void createDevice(const vk::PhysicalDevice& physicalDevice, const std::vector<std::string>& extensions, vk::PhysicalDeviceFeatures* features);
 
@@ -31,6 +32,7 @@ namespace Nova {
         std::unique_ptr<vk::Device> m_device;
         const vk::Queue* m_graphicsQueue;
         const vk::Queue* m_presentQueue;
+        const vk::Queue* m_transferQueue;
 
         void createInstance(const std::string& appName, const std::vector<std::string>& extensions, const std::vector<std::string>& layers);
     };
