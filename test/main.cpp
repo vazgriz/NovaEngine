@@ -327,10 +327,11 @@ int main() {
 
         while (!window.shouldClose()) {
             glfwPollEvents();
-            if (window.iconified()) {
+            window.update();
+
+            if (!window.canRender()) {
                 glfwWaitEvents();
             } else {
-                window.update();
                 graph.submit();
                 allocator->update();
             }

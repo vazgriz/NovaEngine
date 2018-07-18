@@ -30,6 +30,7 @@ namespace Nova {
 
         bool shouldClose() const { return glfwWindowShouldClose(m_window.get()); }
         bool iconified() const { return m_iconified; }
+        bool canRender() const;
 
     private:
         friend class Engine;
@@ -39,6 +40,7 @@ namespace Nova {
         std::unique_ptr<GLFWwindow, void(*)(GLFWwindow*)> m_window;
         int32_t m_width;
         int32_t m_height;
+        bool m_zeroSized = false;
         bool m_iconified = false;
         std::unique_ptr<vk::Surface> m_surface;
         std::unique_ptr<vk::Swapchain> m_swapchain;

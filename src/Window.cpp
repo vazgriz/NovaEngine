@@ -1,5 +1,6 @@
 #include "NovaEngine/Window.h"
 #include "NovaEngine/Engine.h"
+#include <iostream>
 
 using namespace Nova;
 
@@ -25,6 +26,8 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
     m_resizeSignal = std::make_unique<Signal<int32_t, int32_t>>();
     m_iconifySignal = std::make_unique<Signal<bool>>();
 
+    m_zeroSized = (width == 0 || height == 0);
+
     createSurface();
     recreateSwapchain();
 }
@@ -45,6 +48,10 @@ void Window::onIconify(bool iconified) {
     m_iconified = iconified;
 }
 
+bool Window::canRender() const {
+    return !m_iconified && !m_zeroSized;
+}
+
 void Window::update() {
     if (m_resized) {
         m_resized = false;
@@ -53,15 +60,27 @@ void Window::update() {
         int height;
         glfwGetFramebufferSize(m_window.get(), &width, &height);
 
-        m_width = static_cast<int32_t>(width);
-        m_height = static_cast<int32_t>(height);
+        int32_t newWidth = static_cast<int32_t>(width);
+        int32_t newHeight = static_cast<int32_t>(height);
 
-        //if (m_width != 0 && m_height != 0) {
-            recreateSwapchain();
+        if (newWidth == m_width && newHeight == m_height) {
+            return;
+        }
 
-            m_swapchainSignal->emit(*m_swapchain);
-            m_resizeSignal->emit(m_width, m_height);
-        //}
+        if (newWidth == 0 || newHeight == 0) {
+            m_zeroSized = true;
+            return;
+        } else {
+            m_zeroSized = false;
+        }
+
+        m_width = newWidth;
+        m_height = newHeight;
+
+        recreateSwapchain();
+
+        m_swapchainSignal->emit(*m_swapchain);
+        m_resizeSignal->emit(m_width, m_height);
     }
 }
 
