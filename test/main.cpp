@@ -109,6 +109,7 @@ private:
 
     void preSubmit(size_t index) override {
         m_swapchain->acquireNextImage(~0, m_acquireSemaphore.get(), nullptr, m_index);
+        m_vertexBuffer->registerUsage(index);
     }
 
     std::vector<const vk::CommandBuffer*>& getCommands(size_t index) override {
