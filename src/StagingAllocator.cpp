@@ -26,7 +26,7 @@ size_t StagingAllocator::stage(void* data, size_t size) {
     void* dest = m_page.memory->mapping();
     dest = static_cast<void*>(static_cast<char*>(dest) + allocation.offset);
     memcpy(dest, data, size);
-    return allocation.offset;
+    return allocation.offset - m_page.offset;
 }
 
 void StagingAllocator::reset() {
