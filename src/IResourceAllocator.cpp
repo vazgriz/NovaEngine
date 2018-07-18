@@ -12,6 +12,7 @@ template<typename T, typename TCreateInfo>
 Resource<T, TCreateInfo>::Resource(Resource<T, TCreateInfo>&& other) {
     m_resource = other.m_resource;
     other.m_resource = nullptr;
+    m_allocator = other.m_allocator;
 }
 
 template<typename T, typename TCreateInfo>
@@ -19,6 +20,7 @@ Resource<T, TCreateInfo>& Resource<T, TCreateInfo>::operator = (Resource<T, TCre
     free();
     m_resource = other.m_resource;
     other.m_resource = nullptr;
+    m_allocator = other.m_allocator;
     return *this;
 }
 
@@ -29,6 +31,7 @@ Resource<T, TCreateInfo>::~Resource() {
 
 template<typename T, typename TCreateInfo>
 void Resource<T, TCreateInfo>::free() {
+    if (m_resource == nullptr) return;
     m_allocator->free(m_resource);
 }
 
