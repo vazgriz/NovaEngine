@@ -101,7 +101,7 @@ namespace Nova {
     class RenderGraph {
         friend class RenderNode;
     public:
-        RenderGraph(Engine& engine, size_t frames);
+        RenderGraph(Engine& engine);
         RenderGraph(const RenderGraph& other) = delete;
         RenderGraph& operator = (const RenderGraph& other) = delete;
         RenderGraph(RenderGraph&& other) = default;

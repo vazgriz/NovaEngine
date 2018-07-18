@@ -186,7 +186,7 @@ void RenderNode::buildBarriers() {
     }
 }
 
-RenderGraph::RenderGraph(Engine& engine, size_t frames) {
+RenderGraph::RenderGraph(Engine& engine) {
     m_engine = &engine;
 }
 
