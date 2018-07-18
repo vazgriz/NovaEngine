@@ -65,9 +65,13 @@ vk::ShaderModule loadShader(vk::Device& device, const std::string& fileName) {
 
 class TestNode : public Nova::QueueNode {
 public:
-    TestNode(const vk::Queue& queue, vk::Swapchain& swapchain, Nova::BufferAllocator& allocator, Nova::TransferNode& transferNode) : QueueNode(queue) {
+    TestNode(const vk::Queue& queue, vk::Swapchain& swapchain, Nova::BufferAllocator& allocator, Nova::TransferNode& transferNode, Nova::RenderGraph& renderGraph) : QueueNode(queue) {
         m_allocator = &allocator;
         m_transferNode = &transferNode;
+
+        m_renderNode = &renderGraph.addNode(queue);
+        m_bufferUsage = &m_renderNode->addBufferUsage(vk::AccessFlags::VertexAttributeRead);
+
         createSemaphores();
         createVertexBuffer();
         createPipelineLayout();
@@ -84,11 +88,15 @@ public:
 
     vk::Semaphore& acquireSemaphore() { return *m_acquireSemaphore; }
     vk::Semaphore& renderSemaphore() { return *m_renderSemaphore; }
+    Nova::RenderNode& renderNode() const { return *m_renderNode; }
+    Nova::BufferUsage& bufferUsage() const { return *m_bufferUsage; }
 
 private:
     vk::Swapchain* m_swapchain;
     Nova::BufferAllocator* m_allocator;
     Nova::TransferNode* m_transferNode;
+    Nova::RenderNode* m_renderNode;
+    Nova::BufferUsage* m_bufferUsage;
     std::unique_ptr<vk::Semaphore> m_acquireSemaphore;
     std::unique_ptr<vk::Semaphore> m_renderSemaphore;
     uint32_t m_index;
@@ -121,6 +129,8 @@ private:
 
         commandBuffer.begin(beginInfo);
 
+        m_renderNode->preRecord(commandBuffer, vk::PipelineStageFlags::TopOfPipe, vk::PipelineStageFlags::VertexInput);
+
         vk::RenderPassBeginInfo renderPassInfo = {};
         renderPassInfo.renderPass = m_renderPass.get();
         renderPassInfo.framebuffer = &m_framebuffers[m_index];
@@ -134,6 +144,8 @@ private:
         commandBuffer.draw(3, 1, 0, 0);
 
         commandBuffer.endRenderPass();
+
+        m_renderNode->postRecord(commandBuffer, vk::PipelineStageFlags::ColorAttachmentOutput, vk::PipelineStageFlags::BottomOfPipe);
 
         commandBuffer.end();
 
@@ -217,6 +229,7 @@ private:
         vk::BufferCopy copy = {};
         copy.size = vertices.size() * sizeof(Vertex);
         m_transferNode->transfer(vertices.data(), *m_vertexBuffer, copy);
+        m_bufferUsage->add(m_vertexBuffer->resource(), 0, copy.size);
     }
 
     void createPipelineLayout() {
@@ -311,13 +324,17 @@ int main() {
         Nova::Window window = Nova::Window(engine, 800, 600);
         Nova::QueueGraph graph = Nova::QueueGraph(engine, window.swapchain().images().size());
 
-        auto& transferNode = graph.addNode<Nova::TransferNode>(engine, *renderer.graphicsQueue(), graph, 64 * 1024 * 1024);
-        auto& node = graph.addNode<TestNode>(*renderer.graphicsQueue(), window.swapchain(), allocator, transferNode);
+        Nova::RenderGraph renderGraph = Nova::RenderGraph(engine);
+
+        auto& transferNode = graph.addNode<Nova::TransferNode>(engine, *renderer.graphicsQueue(), graph, renderGraph, 64 * 1024 * 1024);
+        auto& node = graph.addNode<TestNode>(*renderer.graphicsQueue(), window.swapchain(), allocator, transferNode, renderGraph);
 
         graph.addEdge(transferNode, node, vk::PipelineStageFlags::VertexShader);
         graph.addExternalWait(node, node.acquireSemaphore(), vk::PipelineStageFlags::ColorAttachmentOutput);
         graph.addExternalSignal(node, node.renderSemaphore());
         graph.bake();
+
+        renderGraph.addEdge(transferNode.renderNode(), node.renderNode());
 
         auto slot1 = window.onSwapchainChanged().connectMember(node, &TestNode::setSwapchain);
         auto slot2 = window.onSwapchainChanged().connect([&](vk::Swapchain& swapchain) {

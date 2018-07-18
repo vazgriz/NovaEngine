@@ -2,10 +2,14 @@
 
 using namespace Nova;
 
-TransferNode::TransferNode(Engine& engine, const vk::Queue& queue, QueueGraph& queueGraph, size_t pageSize) : QueueNode(queue) {
+TransferNode::TransferNode(Engine& engine, const vk::Queue& queue, QueueGraph& queueGraph, RenderGraph& renderGraph, size_t pageSize) : QueueNode(queue) {
     m_engine = &engine;
     m_queueGraph = &queueGraph;
     m_pageSize = pageSize;
+
+    m_renderNode = &renderGraph.addNode(queue);
+    m_bufferUsage = &m_renderNode->addBufferUsage(vk::AccessFlags::TransferWrite);
+    m_imageUsage = &m_renderNode->addImageUsage(vk::AccessFlags::TransferWrite, vk::ImageLayout::TransferDstOptimal);
 
     findType();
 
@@ -63,10 +67,14 @@ const std::vector<const vk::CommandBuffer*>& TransferNode::getCommands(size_t in
 
     commandBuffer.begin(beginInfo);
 
+    m_renderNode->preRecord(commandBuffer, vk::PipelineStageFlags::TopOfPipe, vk::PipelineStageFlags::Transfer);
+
     for (auto& transfer : m_transfers) {
         if (transfer.buffer != nullptr) {
             commandBuffer.copyBuffer(allocator.buffer(), transfer.buffer->resource(), transfer.bufferCopy);
         } else if (transfer.image != nullptr) {
+            vk::ImageSubresourceRange range = {};
+
             vk::ImageMemoryBarrier barrier = {};
             barrier.image = &transfer.image->resource();
             barrier.oldLayout = vk::ImageLayout::Undefined;
@@ -75,16 +83,21 @@ const std::vector<const vk::CommandBuffer*>& TransferNode::getCommands(size_t in
             barrier.dstAccessMask = vk::AccessFlags::TransferWrite;
             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            barrier.subresourceRange.aspectMask = transfer.bufferImageCopy.imageSubresource.aspectMask;
-            barrier.subresourceRange.baseArrayLayer = transfer.bufferImageCopy.imageSubresource.baseArrayLayer;
-            barrier.subresourceRange.layerCount = transfer.bufferImageCopy.imageSubresource.layerCount;
-            barrier.subresourceRange.baseMipLevel = transfer.bufferImageCopy.imageSubresource.mipLevel;
-            barrier.subresourceRange.levelCount = 1;
+            range.aspectMask = transfer.bufferImageCopy.imageSubresource.aspectMask;
+            range.baseArrayLayer = transfer.bufferImageCopy.imageSubresource.baseArrayLayer;
+            range.layerCount = transfer.bufferImageCopy.imageSubresource.layerCount;
+            range.baseMipLevel = transfer.bufferImageCopy.imageSubresource.mipLevel;
+            range.levelCount = 1;
+            barrier.subresourceRange = range;
 
             commandBuffer.pipelineBarrier(vk::PipelineStageFlags::TopOfPipe, vk::PipelineStageFlags::Transfer, {}, {}, {}, { barrier });
             commandBuffer.copyBufferToImage(allocator.buffer(), transfer.image->resource(), transfer.imageLayout, transfer.bufferImageCopy);
+
+            m_imageUsage->add(transfer.image->resource(), range);
         }
     }
+
+    m_renderNode->postRecord(commandBuffer, vk::PipelineStageFlags::Transfer, vk::PipelineStageFlags::BottomOfPipe);
 
     commandBuffer.end();
     m_commandBuffers.push_back(&commandBuffer);
@@ -110,6 +123,8 @@ void TransferNode::transfer(void* data, const Buffer& buffer, vk::BufferCopy cop
     transfer.buffer = &buffer;
     transfer.bufferCopy = { offset, copy.dstOffset, copy.size };
     m_transfers.push_back(transfer);
+
+    m_bufferUsage->add(transfer.buffer->resource(), copy.size, copy.dstOffset);
 }
 
 void TransferNode::transfer(void* data, const Image& image, vk::ImageLayout imageLayout, vk::BufferImageCopy copy) {
