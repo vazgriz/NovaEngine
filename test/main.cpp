@@ -326,7 +326,7 @@ int main() {
 
         Nova::RenderGraph renderGraph = Nova::RenderGraph(engine);
 
-        auto transferNode = Nova::TransferNode(engine, renderer.graphicsQueue(), graph, renderGraph, 64 * 1024 * 1024);
+        auto transferNode = Nova::TransferNode(engine, renderer.transferQueue(), graph, renderGraph, 64 * 1024 * 1024);
         auto node = TestNode(renderer.graphicsQueue(), window.swapchain(), allocator, transferNode, renderGraph);
 
         graph.addNode(transferNode);
