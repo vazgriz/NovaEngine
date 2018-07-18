@@ -31,10 +31,13 @@ template<typename T, typename TCreateInfo>
 void Allocator<T, TCreateInfo>::update() {
     size_t completed = m_queueGraph->completedFrames();
 
-    for (auto it = m_dead.begin(); it != m_dead.end(); it++) {
+    auto it = m_dead.begin();
+    while (it != m_dead.end()) {
         if ((*it)->usage <= completed) {
             m_resources.erase((*it)->resource.get());
-            m_dead.erase(it);
+            it = m_dead.erase(it);
+        } else {
+            it++;
         }
     }
 }
