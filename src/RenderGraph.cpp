@@ -61,9 +61,9 @@ void RenderNode::preRecord(vk::CommandBuffer& commandBuffer, vk::PipelineStageFl
     buildBarriers();
 
     for (size_t i = 0; i < m_inEvents.size(); i++) {
-        if (m_outEvents[i] != nullptr) {
-            commandBuffer.waitEvents({ *m_outEvents[i] }, srcStage, dstStage, {}, {}, {});
-            commandBuffer.resetEvent(*m_outEvents[i], dstStage);
+        if (m_inEvents[i] != nullptr) {
+            commandBuffer.waitEvents({ *m_inEvents[i] }, srcStage, dstStage, {}, {}, {});
+            commandBuffer.resetEvent(*m_inEvents[i], dstStage);
         } else {
             commandBuffer.pipelineBarrier(srcStage, dstStage, vk::DependencyFlags::None,
                 m_inMemoryBarriers, m_inBufferBarriers, m_inImageBarriers);
@@ -86,9 +86,9 @@ void RenderNode::preRecord(vk::CommandBuffer& commandBuffer, vk::PipelineStageFl
 }
 
 void RenderNode::postRecord(vk::CommandBuffer& commandBuffer, vk::PipelineStageFlags srcStage, vk::PipelineStageFlags dstStage) {
-    for (size_t i = 0; i < m_inEvents.size(); i++) {
-        if (m_inEvents[i] != nullptr) {
-            commandBuffer.setEvent(*m_inEvents[i], dstStage);
+    for (size_t i = 0; i < m_outEvents.size(); i++) {
+        if (m_outEvents[i] != nullptr) {
+            commandBuffer.setEvent(*m_outEvents[i], dstStage);
         } else {
             commandBuffer.pipelineBarrier(srcStage, dstStage, vk::DependencyFlags::None,
                 m_outMemoryBarriers, m_outBufferBarriers, m_outImageBarriers);
