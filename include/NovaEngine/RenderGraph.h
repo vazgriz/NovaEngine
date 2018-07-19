@@ -96,6 +96,7 @@ namespace Nova {
         bool addBuffer(vk::Buffer& buffer, BufferUsage& usage);
         bool addImage(vk::Image& image, ImageUsage& usage);
         void buildBarriers();
+        void reset();
     };
 
     class RenderGraph {
@@ -111,6 +112,7 @@ namespace Nova {
 
         void addEdge(RenderNode& source, RenderNode& dest);
         void bake();
+        void reset();
 
     private:
         Engine* m_engine;

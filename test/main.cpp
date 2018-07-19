@@ -337,6 +337,7 @@ int main() {
         graph.bake();
 
         renderGraph.addEdge(transferNode.renderNode(), node.renderNode());
+        renderGraph.bake();
 
         auto slot1 = window.onSwapchainChanged().connectMember(node, &TestNode::setSwapchain);
         auto slot2 = window.onSwapchainChanged().connect([&](vk::Swapchain& swapchain) {
@@ -352,6 +353,7 @@ int main() {
             } else {
                 graph.submit();
                 allocator.update(graph.completedFrames());
+                renderGraph.reset();
             }
         }
 

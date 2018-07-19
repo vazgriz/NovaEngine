@@ -73,8 +73,6 @@ void RenderNode::preRecord(vk::CommandBuffer& commandBuffer, vk::PipelineStageFl
     m_inMemoryBarriers.clear();
     m_inBufferBarriers.clear();
     m_inImageBarriers.clear();
-    m_bufferMap.clear();
-    m_imageMap.clear();
 
     for (auto& usage : m_bufferUsages) {
         usage.clear();
@@ -186,6 +184,11 @@ void RenderNode::buildBarriers() {
     }
 }
 
+void RenderNode::reset() {
+    m_bufferMap.clear();
+    m_imageMap.clear();
+}
+
 RenderGraph::RenderGraph(Engine& engine) {
     m_engine = &engine;
 }
@@ -217,6 +220,12 @@ void RenderGraph::bake() {
                 outNode->m_inEvents.push_back(nullptr);
             }
         }
+    }
+}
+
+void RenderGraph::reset() {
+    for (auto& node : m_nodeList) {
+        node->reset();
     }
 }
 
