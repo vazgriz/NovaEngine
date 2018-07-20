@@ -83,17 +83,14 @@ const std::vector<const vk::CommandBuffer*>& TransferNode::getCommands(size_t in
             barrier.dstAccessMask = vk::AccessFlags::TransferWrite;
             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            range.aspectMask = transfer.bufferImageCopy.imageSubresource.aspectMask;
-            range.baseArrayLayer = transfer.bufferImageCopy.imageSubresource.baseArrayLayer;
-            range.layerCount = transfer.bufferImageCopy.imageSubresource.layerCount;
-            range.baseMipLevel = transfer.bufferImageCopy.imageSubresource.mipLevel;
-            range.levelCount = 1;
-            barrier.subresourceRange = range;
+            barrier.subresourceRange.aspectMask = transfer.bufferImageCopy.imageSubresource.aspectMask;
+            barrier.subresourceRange.baseArrayLayer = transfer.bufferImageCopy.imageSubresource.baseArrayLayer;
+            barrier.subresourceRange.layerCount = transfer.bufferImageCopy.imageSubresource.layerCount;
+            barrier.subresourceRange.baseMipLevel = transfer.bufferImageCopy.imageSubresource.mipLevel;
+            barrier.subresourceRange.levelCount = 1;
 
             commandBuffer.pipelineBarrier(vk::PipelineStageFlags::TopOfPipe, vk::PipelineStageFlags::Transfer, {}, {}, {}, { barrier });
             commandBuffer.copyBufferToImage(allocator.buffer(), transfer.image->resource(), transfer.imageLayout, transfer.bufferImageCopy);
-
-            m_imageUsage->add(transfer.image->resource(), range);
         }
     }
 
@@ -124,6 +121,7 @@ void TransferNode::transfer(void* data, const Buffer& buffer, vk::BufferCopy cop
     transfer.bufferCopy = { offset, copy.dstOffset, copy.size };
     m_transfers.push_back(transfer);
 
+    buffer.registerUsage(m_queueGraph->frame());
     m_bufferUsage->add(transfer.buffer->resource(), copy.dstOffset, copy.size);
 }
 
@@ -142,4 +140,14 @@ void TransferNode::transfer(void* data, const Image& image, vk::ImageLayout imag
     transfer.bufferImageCopy = { offset, 0, 0, copy.imageSubresource, copy.imageOffset, copy.imageExtent };
     transfer.imageLayout = imageLayout;
     m_transfers.push_back(transfer);
+
+    vk::ImageSubresourceRange range = {};
+    range.aspectMask = copy.imageSubresource.aspectMask;
+    range.baseArrayLayer = copy.imageSubresource.baseArrayLayer;
+    range.layerCount = copy.imageSubresource.layerCount;
+    range.baseMipLevel = copy.imageSubresource.mipLevel;
+    range.levelCount = 1;
+
+    image.registerUsage(m_queueGraph->frame());
+    m_imageUsage->add(transfer.image->resource(), range);
 }
