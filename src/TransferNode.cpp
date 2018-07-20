@@ -124,7 +124,7 @@ void TransferNode::transfer(void* data, const Buffer& buffer, vk::BufferCopy cop
     transfer.bufferCopy = { offset, copy.dstOffset, copy.size };
     m_transfers.push_back(transfer);
 
-    m_bufferUsage->add(transfer.buffer->resource(), copy.size, copy.dstOffset);
+    m_bufferUsage->add(transfer.buffer->resource(), copy.dstOffset, copy.size);
 }
 
 void TransferNode::transfer(void* data, const Image& image, vk::ImageLayout imageLayout, vk::BufferImageCopy copy) {
