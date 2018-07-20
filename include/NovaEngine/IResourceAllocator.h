@@ -20,7 +20,7 @@ namespace Nova {
         Memory::Page& page() const { return *m_resource->page; }
         size_t size() const { return m_resource->allocation.size; }
         size_t offset() const { return m_resource->allocation.offset; }
-        void registerUsage(size_t frame);
+        void registerUsage(size_t frame) const;
 
     private:
         IResourceAllocator<T, TCreateInfo>* m_allocator;

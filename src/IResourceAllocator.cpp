@@ -36,7 +36,7 @@ void Resource<T, TCreateInfo>::free() {
 }
 
 template<typename T, typename TCreateInfo>
-void Resource<T, TCreateInfo>::registerUsage(size_t frame) {
+void Resource<T, TCreateInfo>::registerUsage(size_t frame) const {
     m_allocator->registerUsage(m_resource, frame);
 }
 
