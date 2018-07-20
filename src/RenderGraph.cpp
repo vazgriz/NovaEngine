@@ -116,7 +116,9 @@ void RenderNode::buildBarriers() {
                     barrier.buffer = instance.buffer;
                     barrier.offset = instance.offset;
                     barrier.size = instance.size;
-                    barrier.srcAccessMask = it->second->m_accessMask;
+                    if (in->m_family == m_family) {
+                        barrier.srcAccessMask = it->second->m_accessMask;
+                    }
                     barrier.dstAccessMask = usage.m_accessMask;
                     barrier.srcQueueFamilyIndex = in->m_family;
                     barrier.dstQueueFamilyIndex = m_family;
@@ -133,7 +135,9 @@ void RenderNode::buildBarriers() {
                     barrier.offset = instance.offset;
                     barrier.size = instance.size;
                     barrier.srcAccessMask = usage.m_accessMask;
-                    barrier.dstAccessMask = it->second->m_accessMask;
+                    if (out->m_family == m_family) {
+                        barrier.dstAccessMask = it->second->m_accessMask;
+                    }
                     barrier.srcQueueFamilyIndex = m_family;
                     barrier.dstQueueFamilyIndex = out->m_family;
 
@@ -151,7 +155,9 @@ void RenderNode::buildBarriers() {
                     vk::ImageMemoryBarrier barrier = {};
                     barrier.image = instance.image;
                     barrier.subresourceRange = instance.range;
-                    barrier.srcAccessMask = it->second->m_accessMask;
+                    if (in->m_family == m_family) {
+                        barrier.srcAccessMask = it->second->m_accessMask;
+                    }
                     barrier.dstAccessMask = usage.m_accessMask;
                     barrier.oldLayout = it->second->m_layout;
                     barrier.newLayout = usage.m_layout;
@@ -170,7 +176,9 @@ void RenderNode::buildBarriers() {
                         barrier.image = instance.image;
                         barrier.subresourceRange = instance.range;
                         barrier.srcAccessMask = usage.m_accessMask;
-                        barrier.dstAccessMask = it->second->m_accessMask;
+                        if (out->m_family == m_family) {
+                            barrier.dstAccessMask = it->second->m_accessMask;
+                        }
                         barrier.oldLayout = usage.m_layout;
                         barrier.newLayout = it->second->m_layout;
                         barrier.srcQueueFamilyIndex = m_family;
