@@ -22,7 +22,7 @@ namespace Nova {
         TransferNode(TransferNode&& other) = default;
         TransferNode& operator = (TransferNode&& other) = default;
 
-        const std::vector<const vk::CommandBuffer*>& getCommands(size_t index) override;
+        const std::vector<const vk::CommandBuffer*>& getCommands(size_t frame, size_t index) override;
 
         void transfer(void* data, const Buffer& buffer, vk::BufferCopy copy);
         void transfer(void* data, const Image& image, vk::ImageLayout imageLayout, vk::BufferImageCopy copy);

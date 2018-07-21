@@ -18,9 +18,9 @@ namespace Nova {
         QueueNode& operator = (QueueNode&& other) = default;
         virtual ~QueueNode() = default;
 
-        virtual void preSubmit(size_t index) {}
-        virtual const std::vector<const vk::CommandBuffer*>& getCommands(size_t index) = 0;
-        virtual void postSubmit(size_t index) {}
+        virtual void preSubmit(size_t frame) {}
+        virtual const std::vector<const vk::CommandBuffer*>& getCommands(size_t frame, size_t index) = 0;
+        virtual void postSubmit(size_t frame) {}
 
         const vk::Queue& queue() const { return *m_queue; }
 

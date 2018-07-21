@@ -115,12 +115,12 @@ private:
         m_renderSemaphore = std::make_unique<vk::Semaphore>(queue().device(), info);
     }
 
-    void preSubmit(size_t index) override {
+    void preSubmit(size_t frame) override {
         m_swapchain->acquireNextImage(~0, m_acquireSemaphore.get(), nullptr, m_index);
-        m_vertexBuffer->registerUsage(index);
+        m_vertexBuffer->registerUsage(frame);
     }
 
-    std::vector<const vk::CommandBuffer*>& getCommands(size_t index) override {
+    std::vector<const vk::CommandBuffer*>& getCommands(size_t frame, size_t index) override {
         vk::CommandBuffer& commandBuffer = commandBuffers()[index];
         commandBuffer.reset(vk::CommandBufferResetFlags::None);
 
@@ -155,7 +155,7 @@ private:
         return m_commands;
     }
 
-    void postSubmit(size_t index) override {
+    void postSubmit(size_t frame) override {
         vk::PresentInfo info = {};
         info.swapchains = { *m_swapchain };
         info.imageIndices = { m_index };

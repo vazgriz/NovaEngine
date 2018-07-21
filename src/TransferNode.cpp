@@ -55,7 +55,7 @@ void TransferNode::resize(size_t frames) {
     }
 }
 
-const std::vector<const vk::CommandBuffer*>& TransferNode::getCommands(size_t index) {
+const std::vector<const vk::CommandBuffer*>& TransferNode::getCommands(size_t frame, size_t index) {
     m_commandBuffers.clear();
     StagingAllocator& allocator = m_allocators[index];
 

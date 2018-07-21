@@ -144,7 +144,7 @@ void QueueGraph::submit() {
     size_t index = m_frame % m_fences.size();
 
     for (auto node : m_nodeList) {
-        node->node->preSubmit(index);
+        node->node->preSubmit(m_frame);
     }
 
     for (size_t i = 0; i < m_nodeList.size(); i++) {
@@ -154,7 +154,7 @@ void QueueGraph::submit() {
         m_fences[index][i].wait();
         m_fences[index][i].reset();
 
-        auto commandBuffers = node->node->getCommands(index);
+        auto commandBuffers = node->node->getCommands(m_frame, index);
 
         for (auto commandBuffer : commandBuffers) {
             node->info.commandBuffers.push_back(*commandBuffer);
@@ -164,7 +164,7 @@ void QueueGraph::submit() {
     }
 
     for (auto node : m_nodeList) {
-        node->node->postSubmit(index);
+        node->node->postSubmit(m_frame);
     }
 
     m_frame++;
