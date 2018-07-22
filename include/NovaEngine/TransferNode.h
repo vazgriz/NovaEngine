@@ -24,8 +24,8 @@ namespace Nova {
 
         const std::vector<const vk::CommandBuffer*>& getCommands(size_t frame, size_t index) override;
 
-        void transfer(void* data, const Buffer& buffer, vk::BufferCopy copy);
-        void transfer(void* data, const Image& image, vk::ImageLayout imageLayout, vk::BufferImageCopy copy);
+        void transfer(const void* data, const Buffer& buffer, vk::BufferCopy copy);
+        void transfer(const void* data, const Image& image, vk::ImageLayout imageLayout, vk::BufferImageCopy copy);
 
         RenderNode& renderNode() const { return *m_renderNode; }
         BufferUsage& bufferUsage() const { return *m_bufferUsage; }

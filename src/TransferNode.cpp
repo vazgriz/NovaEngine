@@ -104,7 +104,7 @@ const std::vector<const vk::CommandBuffer*>& TransferNode::getCommands(size_t fr
     return m_commandBuffers;
 }
 
-void TransferNode::transfer(void* data, const Buffer& buffer, vk::BufferCopy copy) {
+void TransferNode::transfer(const void* data, const Buffer& buffer, vk::BufferCopy copy) {
     if (buffer.page().mapping() != nullptr) {
         //for buffers that are host-visible (eg NUMA)
         void* dest = static_cast<void*>(static_cast<char*>(buffer.page().mapping()) + buffer.offset() + copy.dstOffset);
@@ -125,7 +125,7 @@ void TransferNode::transfer(void* data, const Buffer& buffer, vk::BufferCopy cop
     m_bufferUsage->add(transfer.buffer->resource(), copy.dstOffset, copy.size);
 }
 
-void TransferNode::transfer(void* data, const Image& image, vk::ImageLayout imageLayout, vk::BufferImageCopy copy) {
+void TransferNode::transfer(const void* data, const Image& image, vk::ImageLayout imageLayout, vk::BufferImageCopy copy) {
     //can't copy directly into images, so it must go through staging
     size_t index = getFrame();
     StagingAllocator& allocator = m_allocators[index];

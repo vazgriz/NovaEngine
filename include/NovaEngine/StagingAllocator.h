@@ -18,7 +18,7 @@ namespace Nova {
 
         vk::Buffer& buffer() const { return *m_buffer; }
 
-        size_t stage(void* data, size_t size);
+        size_t stage(const void* data, size_t size);
         void reset();
 
     private:
