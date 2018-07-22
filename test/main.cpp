@@ -65,9 +65,10 @@ vk::ShaderModule loadShader(vk::Device& device, const std::string& fileName) {
 
 class TestNode : public Nova::QueueNode {
 public:
-    TestNode(const vk::Queue& queue, vk::Swapchain& swapchain, Nova::BufferAllocator& allocator, Nova::TransferNode& transferNode, Nova::RenderGraph& renderGraph) : QueueNode(queue) {
+    TestNode(const vk::Queue& queue, vk::Swapchain& swapchain, Nova::BufferAllocator& allocator, Nova::TransferNode& transferNode, Nova::RenderGraph& renderGraph, Nova::Camera& camera) : QueueNode(queue) {
         m_allocator = &allocator;
         m_transferNode = &transferNode;
+        m_camera = &camera;
 
         m_renderNode = &renderGraph.addNode(queue);
         m_bufferUsage = &m_renderNode->addBufferUsage(vk::AccessFlags::VertexAttributeRead);
@@ -97,6 +98,7 @@ private:
     Nova::TransferNode* m_transferNode;
     Nova::RenderNode* m_renderNode;
     Nova::BufferUsage* m_bufferUsage;
+    Nova::Camera* m_camera;
     std::unique_ptr<vk::Semaphore> m_acquireSemaphore;
     std::unique_ptr<vk::Semaphore> m_renderSemaphore;
     uint32_t m_index;
@@ -139,8 +141,9 @@ private:
 
         commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::Inline);
 
-        commandBuffer.bindVertexBuffers(0, { m_vertexBuffer->resource() }, { 0 });
         commandBuffer.bindPipeline(vk::PipelineBindPoint::Graphics, *m_pipeline);
+        commandBuffer.bindVertexBuffers(0, { m_vertexBuffer->resource() }, { 0 });
+        commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::Graphics, *m_pipelineLayout, 0, { m_camera->descriptor() }, {});
         commandBuffer.draw(3, 1, 0, 0);
 
         commandBuffer.endRenderPass();
@@ -234,6 +237,7 @@ private:
 
     void createPipelineLayout() {
         vk::PipelineLayoutCreateInfo info = {};
+        info.setLayouts = { m_camera->layout() };
 
         m_pipelineLayout = std::make_unique<vk::PipelineLayout>(queue().device(), info);
     }
@@ -323,11 +327,14 @@ int main() {
 
         Nova::Window window = Nova::Window(engine, 800, 600);
         Nova::QueueGraph graph = Nova::QueueGraph(engine, window.swapchain().images().size());
+        Nova::PerspectiveCamera camera = Nova::PerspectiveCamera(engine, allocator, { window.width(), window.height() }, 90.0f);
+        camera.setPosition({ 0, 0, 1 });
+        camera.setRotation({ 0, 0, 0, 1 });
 
         Nova::RenderGraph renderGraph = Nova::RenderGraph(engine);
 
         auto transferNode = Nova::TransferNode(engine, renderer.transferQueue(), graph, renderGraph, 64 * 1024 * 1024);
-        auto node = TestNode(renderer.graphicsQueue(), window.swapchain(), allocator, transferNode, renderGraph);
+        auto node = TestNode(renderer.graphicsQueue(), window.swapchain(), allocator, transferNode, renderGraph, camera);
 
         graph.addNode(transferNode);
         graph.addNode(node);
@@ -339,9 +346,10 @@ int main() {
         renderGraph.addEdge(transferNode.renderNode(), node.renderNode());
         renderGraph.bake();
 
-        auto slot1 = window.onSwapchainChanged().connectMember(node, &TestNode::setSwapchain);
-        auto slot2 = window.onSwapchainChanged().connect([&](vk::Swapchain& swapchain) {
+        auto slot1 = window.onSwapchainChanged().connect([&](vk::Swapchain& swapchain) {
             graph.setFrames(swapchain.images().size());
+            node.setSwapchain(swapchain);
+            camera.setSize({ swapchain.extent().width, swapchain.extent().height });
         });
 
         while (!window.shouldClose()) {
@@ -351,6 +359,7 @@ int main() {
             if (!window.canRender()) {
                 glfwWaitEvents();
             } else {
+                camera.update(transferNode);
                 graph.submit();
                 allocator.update(graph.completedFrames());
                 renderGraph.reset();

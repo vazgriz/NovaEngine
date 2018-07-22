@@ -5,3 +5,5 @@
 #include <NovaEngine/RenderGraph.h>
 #include <NovaEngine/Allocator.h>
 #include <NovaEngine/TransferNode.h>
+#include <NovaEngine/Camera.h>
+#include <NovaEngine/PerspectiveCamera.h>
