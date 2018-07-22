@@ -22,6 +22,8 @@ namespace Nova {
 
         vk::Swapchain& swapchain() const { return *m_swapchain; }
         const std::vector<vk::ImageView>& imageViews() const { return m_imageViews; }
+        int32_t width() const { return m_width; }
+        int32_t height() const { return m_height; }
 
         void update();
         Signal<vk::Swapchain&>& onSwapchainChanged() { return *m_swapchainSignal; }
