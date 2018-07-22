@@ -7,10 +7,11 @@ namespace Nova {
     template <typename T>
     class RawResource {
     public:
+        RawResource(T&& resource);
         RawResource(const RawResource& other) = delete;
         RawResource& operator = (const RawResource& other) = delete;
-        RawResource(RawResource&& other) = default;
-        RawResource& operator = (RawResource&& other) = default;
+        RawResource(RawResource&& other);
+        RawResource& operator = (RawResource&& other);
         ~RawResource();
 
         T resource;

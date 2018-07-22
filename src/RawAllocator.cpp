@@ -25,7 +25,7 @@ RawAllocator<T, TCreateInfo>::RawAllocator(Engine& engine, size_t pageSize) {
 
 template<typename T, typename TCreateInfo>
 RawResource<T> RawAllocator<T, TCreateInfo>::allocate(TCreateInfo info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) {
-    RawResource<T> resource = { T(m_engine->renderer().device(), info) };
+    RawResource<T> resource = RawResource<T>{ T(m_engine->renderer().device(), info) };
 
     BindResult result = bind(resource.resource, required, preferred);
     resource.allocation = result.allocation;
