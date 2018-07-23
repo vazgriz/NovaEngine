@@ -29,6 +29,7 @@ add_library(NovaEngine
     "src/Camera.cpp"
     "src/PerspectiveCamera.cpp"
     "src/Input.cpp"
+    "src/FreeCam.cpp"
 )
 target_include_directories(NovaEngine
     PUBLIC "${PROJECT_SOURCE_DIR}/include"

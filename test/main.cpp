@@ -329,7 +329,8 @@ int main() {
         Nova::QueueGraph graph = Nova::QueueGraph(engine, window.swapchain().images().size());
         Nova::PerspectiveCamera camera = Nova::PerspectiveCamera(engine, allocator, { window.width(), window.height() }, 90.0f);
         camera.setPosition({ 0, 0, 1 });
-        camera.setRotation({ 0, 0, 0, 1 });
+        camera.setRotation({ 1, 0, 0, 0 });
+        Nova::FreeCam freeCam = Nova::FreeCam(window, camera, 0.25f);
 
         Nova::RenderGraph renderGraph = Nova::RenderGraph(engine);
 
@@ -352,13 +353,20 @@ int main() {
             camera.setSize({ swapchain.extent().width, swapchain.extent().height });
         });
 
+        double time = glfwGetTime();
+
         while (!window.shouldClose()) {
+            double now = glfwGetTime();
+            float delta = static_cast<float>(now - time);
+            time = now;
+
             glfwPollEvents();
             window.update();
 
             if (!window.canRender()) {
                 glfwWaitEvents();
             } else {
+                freeCam.update(delta);
                 camera.update(transferNode);
                 graph.submit();
                 allocator.update(graph.completedFrames());
