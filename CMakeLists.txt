@@ -28,6 +28,7 @@ add_library(NovaEngine
     "src/TransferNode.cpp"
     "src/Camera.cpp"
     "src/PerspectiveCamera.cpp"
+    "src/Input.cpp"
 )
 target_include_directories(NovaEngine
     PUBLIC "${PROJECT_SOURCE_DIR}/include"

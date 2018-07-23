@@ -4,10 +4,12 @@
 #include <string>
 #include <VulkanWrapper/VulkanWrapper.h>
 #include "NovaEngine/Signal.h"
+#include "NovaEngine/Input.h"
 
 namespace Nova {
     class Engine;
     class Renderer;
+    class Input;
 
     class Window {
     public:
@@ -25,6 +27,8 @@ namespace Nova {
         int32_t width() const { return m_width; }
         int32_t height() const { return m_height; }
 
+        Input& input() const { return *m_input; }
+
         void update();
         Signal<vk::Swapchain&>& onSwapchainChanged() { return *m_swapchainSignal; }
         Signal<int32_t, int32_t>& onResize() { return *m_resizeSignal; }
@@ -33,6 +37,8 @@ namespace Nova {
         bool shouldClose() const { return glfwWindowShouldClose(m_window.get()); }
         bool iconified() const { return m_iconified; }
         bool canRender() const;
+
+        void setMouseLocked(bool locked);
 
     private:
         friend class Engine;
@@ -47,6 +53,7 @@ namespace Nova {
         std::unique_ptr<vk::Surface> m_surface;
         std::unique_ptr<vk::Swapchain> m_swapchain;
         std::vector<vk::ImageView> m_imageViews;
+        std::unique_ptr<Input> m_input;
 
         void createSurface();
         void recreateSwapchain();
@@ -55,6 +62,7 @@ namespace Nova {
         vk::Extent2D chooseExtent(const vk::SurfaceCapabilities& capabilities);
         void createSwapchain();
         void createImageViews();
+        void createInput();
 
         bool m_resized = false;
         std::unique_ptr<Signal<vk::Swapchain&>> m_swapchainSignal;
@@ -66,5 +74,9 @@ namespace Nova {
 
         static void onIconify(GLFWwindow* window, int iconified);
         void onIconify(bool iconified);
+
+        static void onKeyEvent(GLFWwindow* window, int button, int scancode, int action, int mods);
+        static void onMouseEvent(GLFWwindow* window, int button, int action, int mods);
+        static void onMouseMove(GLFWwindow* window, double xPos, double yPos);
     };
 }

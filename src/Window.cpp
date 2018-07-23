@@ -1,6 +1,6 @@
 #include "NovaEngine/Window.h"
 #include "NovaEngine/Engine.h"
-#include <iostream>
+#include "NovaEngine/Input.h"
 
 using namespace Nova;
 
@@ -21,6 +21,9 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
     glfwSetWindowUserPointer(m_window.get(), this);
     glfwSetWindowSizeCallback(m_window.get(), &Window::onResize);
     glfwSetWindowIconifyCallback(m_window.get(), &Window::onIconify);
+    glfwSetKeyCallback(m_window.get(), &Window::onKeyEvent);
+    glfwSetMouseButtonCallback(m_window.get(), &Window::onMouseEvent);
+    glfwSetCursorPosCallback(m_window.get(), &Window::onMouseMove);
 
     m_swapchainSignal = std::make_unique<Signal<vk::Swapchain&>>();
     m_resizeSignal = std::make_unique<Signal<int32_t, int32_t>>();
@@ -30,6 +33,7 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
 
     createSurface();
     recreateSwapchain();
+    createInput();
 }
 
 void Window::onResize(GLFWwindow* window, int width, int height) {
@@ -46,6 +50,18 @@ void Window::onIconify(GLFWwindow* window, int iconified) {
 
 void Window::onIconify(bool iconified) {
     m_iconified = iconified;
+}
+
+void Window::onKeyEvent(GLFWwindow* window, int button, int scancode, int action, int mods) {
+    reinterpret_cast<Window*>(glfwGetWindowUserPointer(window))->m_input->onKeyEvent(button, scancode, action, mods);
+}
+
+void Window::onMouseEvent(GLFWwindow* window, int button, int action, int mods) {
+    reinterpret_cast<Window*>(glfwGetWindowUserPointer(window))->m_input->onMouseEvent(button, action, mods);
+}
+
+void Window::onMouseMove(GLFWwindow* window, double xPos, double yPos) {
+    reinterpret_cast<Window*>(glfwGetWindowUserPointer(window))->m_input->onMouseMove(xPos, yPos);
 }
 
 bool Window::canRender() const {
@@ -82,6 +98,8 @@ void Window::update() {
         m_swapchainSignal->emit(*m_swapchain);
         m_resizeSignal->emit(m_width, m_height);
     }
+
+    m_input->update();
 }
 
 void Window::createSurface() {
@@ -184,5 +202,16 @@ void Window::createImageViews() {
         info.subresourceRange.levelCount = 1;
 
         m_imageViews.emplace_back(m_renderer->device(), info);
+    }
+}
+void Window::createInput() {
+    m_input = std::make_unique<Input>(*m_engine, *this);
+}
+
+void Window::setMouseLocked(bool locked) {
+    if (locked) {
+        glfwSetInputMode(m_window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    } else {
+        glfwSetInputMode(m_window.get(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 }
