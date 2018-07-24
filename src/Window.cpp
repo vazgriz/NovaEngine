@@ -9,7 +9,6 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
     m_renderer = &m_engine->renderer();
     m_width = width;
     m_height = height;
-    engine.addWindow(*this);
     m_physicalDevice = &m_renderer->device().physicalDevice();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -34,6 +33,8 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
     createSurface();
     recreateSwapchain();
     createInput();
+
+    engine.addWindow(*this);
 }
 
 void Window::onResize(GLFWwindow* window, int width, int height) {
