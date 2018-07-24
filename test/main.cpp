@@ -327,14 +327,17 @@ int main() {
 
         Nova::Window window = Nova::Window(engine, 800, 600);
         Nova::QueueGraph& graph = engine.queueGraph();
-        Nova::PerspectiveCamera camera = Nova::PerspectiveCamera(engine, allocator, { window.width(), window.height() }, 90.0f);
+
+        Nova::RenderGraph& renderGraph = engine.renderGraph();
+
+        auto transferNode = Nova::TransferNode(engine, renderer.transferQueue(), graph, renderGraph, 64 * 1024 * 1024);
+
+        Nova::CameraManager cameraManager = Nova::CameraManager(transferNode);
+        Nova::PerspectiveCamera camera = Nova::PerspectiveCamera(engine, cameraManager, allocator, { window.width(), window.height() }, 90.0f);
         camera.setPosition({ 0, 0, 1 });
         camera.setRotation({ 1, 0, 0, 0 });
         Nova::FreeCam freeCam = Nova::FreeCam(window, camera, 0.25f);
 
-        Nova::RenderGraph renderGraph = Nova::RenderGraph(engine);
-
-        auto transferNode = Nova::TransferNode(engine, renderer.transferQueue(), graph, renderGraph, 64 * 1024 * 1024);
         auto node = TestNode(renderer.graphicsQueue(), window.swapchain(), allocator, transferNode, renderGraph, camera);
 
         graph.addNode(transferNode);
@@ -367,7 +370,7 @@ int main() {
                 glfwWaitEvents();
             } else {
                 freeCam.update(delta);
-                camera.update(transferNode);
+                cameraManager.update(delta);
                 graph.submit();
                 engine.memory().update(graph.completedFrames());
                 renderGraph.reset();

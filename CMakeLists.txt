@@ -26,6 +26,7 @@ add_library(NovaEngine
     "src/Allocator.cpp"
     "src/StagingAllocator.cpp"
     "src/TransferNode.cpp"
+    "src/CameraManager.cpp"
     "src/Camera.cpp"
     "src/PerspectiveCamera.cpp"
     "src/Input.cpp"

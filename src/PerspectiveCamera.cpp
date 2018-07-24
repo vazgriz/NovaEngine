@@ -3,7 +3,8 @@
 
 using namespace Nova;
 
-PerspectiveCamera::PerspectiveCamera(Engine& engine, BufferAllocator& allocator, glm::ivec2 size, float fov) : Camera(engine, allocator, size) {
+PerspectiveCamera::PerspectiveCamera(Engine& engine, CameraManager& cameraManager, BufferAllocator& allocator, glm::ivec2 size, float fov)
+    : Camera(engine, cameraManager, allocator, size) {
     m_fov = fov;
 }
 

@@ -5,6 +5,7 @@
 #include "NovaEngine/Engine.h"
 #include "NovaEngine/Allocator.h"
 #include "NovaEngine/TransferNode.h"
+#include "NovaEngine/CameraManager.h"
 
 namespace Nova {
     class Camera {
@@ -15,11 +16,12 @@ namespace Nova {
         };
 
     public:
-        Camera(Engine& engine, BufferAllocator& allocator, glm::ivec2 size);
+        Camera(Engine& engine, CameraManager& cameraManager, BufferAllocator& allocator, glm::ivec2 size);
         Camera(const Camera& other) = delete;
         Camera& operator = (const Camera& other) = delete;
         Camera(Camera&& other) = default;
         Camera& operator = (Camera&& other) = default;
+        virtual ~Camera();
 
         vk::DescriptorSetLayout& layout() const { return *m_layout; }
         vk::DescriptorSet& descriptor() const { return *m_descriptor; }
@@ -36,6 +38,7 @@ namespace Nova {
 
     private:
         Engine* m_engine;
+        CameraManager* m_manager;
         BufferAllocator* m_allocator;
         std::unique_ptr<vk::DescriptorPool> m_descriptorPool;
         std::unique_ptr<vk::DescriptorSetLayout> m_layout;

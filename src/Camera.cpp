@@ -3,8 +3,9 @@
 
 using namespace Nova;
 
-Camera::Camera(Engine& engine, BufferAllocator& allocator, glm::ivec2 size) {
+Camera::Camera(Engine& engine, CameraManager& cameraManager, BufferAllocator& allocator, glm::ivec2 size) {
     m_engine = &engine;
+    m_manager = &cameraManager;
     m_allocator = &allocator;
     m_size = size;
 
@@ -12,6 +13,12 @@ Camera::Camera(Engine& engine, BufferAllocator& allocator, glm::ivec2 size) {
     createLayout();
     createBuffer();
     createDescriptor();
+
+    m_manager->addCamera(*this);
+}
+
+Camera::~Camera() {
+    m_manager->removeCamera(*this);
 }
 
 void Camera::setSize(glm::ivec2 size) {
