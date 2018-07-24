@@ -4,6 +4,8 @@
 #include "NovaEngine/Window.h"
 #include "NovaEngine/Memory.h"
 #include "NovaEngine/QueueGraph.h"
+#include "NovaEngine/RenderGraph.h"
+#include "NovaEngine/ISystem.h"
 
 namespace Nova {
     class Engine {
@@ -18,6 +20,10 @@ namespace Nova {
         Memory& memory() { return *m_memory; }
         Window& window() { return *m_window; }
         QueueGraph& queueGraph() { return *m_queueGraph; }
+        RenderGraph& renderGraph() { return *m_renderGraph; }
+
+        void addSystem(ISystem& system);
+        void run();
 
     private:
         friend class Window;
@@ -25,6 +31,9 @@ namespace Nova {
         Window* m_window = nullptr;
         std::unique_ptr<Memory> m_memory;
         std::unique_ptr<QueueGraph> m_queueGraph;
+        std::unique_ptr<RenderGraph> m_renderGraph;
+        std::vector<ISystem*> m_systems;
+        float m_lastTime;
 
         void addWindow(Window& window);
     };

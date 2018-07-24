@@ -337,6 +337,8 @@ int main() {
         camera.setPosition({ 0, 0, 1 });
         camera.setRotation({ 1, 0, 0, 0 });
         Nova::FreeCam freeCam = Nova::FreeCam(window, camera, 0.25f);
+        engine.addSystem(cameraManager);
+        engine.addSystem(freeCam);
 
         auto node = TestNode(renderer.graphicsQueue(), window.swapchain(), allocator, transferNode, renderGraph, camera);
 
@@ -356,27 +358,7 @@ int main() {
             camera.setSize({ swapchain.extent().width, swapchain.extent().height });
         });
 
-        double time = glfwGetTime();
-
-        while (!window.shouldClose()) {
-            double now = glfwGetTime();
-            float delta = static_cast<float>(now - time);
-            time = now;
-
-            glfwPollEvents();
-            window.update();
-
-            if (!window.canRender()) {
-                glfwWaitEvents();
-            } else {
-                freeCam.update(delta);
-                cameraManager.update(delta);
-                graph.submit();
-                engine.memory().update(graph.completedFrames());
-                renderGraph.reset();
-            }
-        }
-
+        engine.run();
         graph.wait();
     }
 
