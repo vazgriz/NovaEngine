@@ -28,6 +28,7 @@ void FreeCam::update(float delta) {
         glm::quat rotation = glm::angleAxis(glm::radians(-m_look.x), glm::vec3(0, 1, 0)) * glm::angleAxis(-glm::radians(m_look.y), glm::vec3(1, 0, 0));
         glm::vec3 forward = rotation * glm::vec3(0, 0, -1);
         glm::vec3 right = rotation * glm::vec3(1, 0, 0);
+        glm::vec3 up = rotation * glm::vec3(0, 1, 0);
 
         if (m_input->getButtonHold(Button::W)) {
             m_position += forward * delta;
@@ -43,6 +44,14 @@ void FreeCam::update(float delta) {
         
         if (m_input->getButtonHold(Button::A)) {
             m_position -= right * delta;
+        }
+
+        if (m_input->getButtonHold(Button::E)) {
+            m_position += up * delta;
+        }
+
+        if (m_input->getButtonHold(Button::Q)) {
+            m_position -= up * delta;
         }
 
         m_camera->setPosition(m_position);
