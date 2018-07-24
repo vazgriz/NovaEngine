@@ -36,9 +36,9 @@ struct Vertex {
 };
 
 std::vector<Vertex> vertices = {
-    { { -1.0f,  1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-    { {  0.0f, -1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-    { {  1.0f,  1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+    { { -1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
+    { {  0.0f,  1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+    { {  1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
 };
 
 std::vector<char> loadFile(const std::string& fileName) {
