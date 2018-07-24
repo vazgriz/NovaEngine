@@ -326,7 +326,7 @@ int main() {
         Nova::BufferAllocator allocator = Nova::BufferAllocator(engine, 256 * 1024 * 1024);
 
         Nova::Window window = Nova::Window(engine, 800, 600);
-        Nova::QueueGraph graph = Nova::QueueGraph(engine, window.swapchain().images().size());
+        Nova::QueueGraph graph = Nova::QueueGraph(engine);
         Nova::PerspectiveCamera camera = Nova::PerspectiveCamera(engine, allocator, { window.width(), window.height() }, 90.0f);
         camera.setPosition({ 0, 0, 1 });
         camera.setRotation({ 1, 0, 0, 0 });

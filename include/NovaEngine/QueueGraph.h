@@ -2,10 +2,11 @@
 #include <VulkanWrapper/VulkanWrapper.h>
 #include <vector>
 #include <unordered_set>
-#include "NovaEngine/DirectedAcyclicGraph.h"
-#include "NovaEngine/Engine.h"
+#include "NovaEngine/Signal.h"
 
 namespace Nova {
+    class Engine;
+    class Renderer;
     class QueueGraph;
 
     class QueueNode {
@@ -50,7 +51,7 @@ namespace Nova {
             vk::SubmitInfo info;
         };
 
-        QueueGraph(Engine& engine, size_t frames);
+        QueueGraph(Engine& engine);
         QueueGraph(const QueueGraph& other) = delete;
         QueueGraph& operator = (const QueueGraph& other) = delete;
         QueueGraph(QueueGraph&& other) = default;

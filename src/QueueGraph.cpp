@@ -1,4 +1,6 @@
 #include "NovaEngine/QueueGraph.h"
+#include "NovaEngine/Engine.h"
+#include "NovaEngine/DirectedAcyclicGraph.h"
 
 using namespace Nova;
 
@@ -24,12 +26,10 @@ void QueueNode::createCommandBuffers(size_t count) {
     m_commandBuffers = m_commandPool->allocate(info);
 }
 
-QueueGraph::QueueGraph(Engine& engine, size_t frames) {
+QueueGraph::QueueGraph(Engine& engine) {
     m_engine = &engine;
     m_renderer = &engine.renderer();
     m_onFrameCountChanged = std::make_unique<Signal<size_t>>();
-
-    setFrames(frames);
 }
 
 void QueueGraph::wait() {
