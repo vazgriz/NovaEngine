@@ -1,9 +1,10 @@
 #pragma once
 #include "NovaEngine/Window.h"
 #include "NovaEngine/Camera.h"
+#include "NovaEngine/ISystem.h"
 
 namespace Nova {
-    class FreeCam {
+    class FreeCam : public ISystem {
     public:
         FreeCam(Window& window, Camera& camera, float sensitivity);
         FreeCam(const FreeCam& other) = delete;
@@ -11,7 +12,7 @@ namespace Nova {
         FreeCam(FreeCam&& other) = default;
         FreeCam& operator = (FreeCam&& other) = default;
 
-        void update(float delta);
+        void update(float delta) override;
 
     private:
         Window* m_window;
