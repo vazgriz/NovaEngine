@@ -2,9 +2,9 @@
 #include <VulkanWrapper/VulkanWrapper.h>
 #include <vector>
 #include <unordered_set>
-#include "NovaEngine/Engine.h"
 
 namespace Nova {
+    class Engine;
     class RenderNode;
 
     class BufferUsage {
