@@ -1,5 +1,6 @@
 #include "NovaEngine/Memory.h"
 #include "NovaEngine/Engine.h"
+#include "NovaEngine/IResourceAllocator.h"
 
 #define PAGE_SIZE (256 * 1024 * 1024)
 
@@ -67,5 +68,19 @@ void Memory::free(MemoryAllocation allocation) {
         if (&page == allocation.memory) {
             page.free(allocation);
         }
+    }
+}
+
+void Memory::addResourceAllocator(IResourceAllocatorBase& allocator) {
+    m_resourceAllocators.insert(&allocator);
+}
+
+void Memory::removeResourceAllocator(IResourceAllocatorBase& allocator) {
+    m_resourceAllocators.erase(&allocator);
+}
+
+void Memory::update(size_t completed) {
+    for (auto allocator : m_resourceAllocators) {
+        allocator->update(completed);
     }
 }

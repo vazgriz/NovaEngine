@@ -1,6 +1,15 @@
 #include "NovaEngine/IResourceAllocator.h"
+#include "NovaEngine/Engine.h"
 
 using namespace Nova;
+
+IResourceAllocatorBase::IResourceAllocatorBase(Engine& engine) {
+    m_engine = &engine;
+}
+
+IResourceAllocatorBase::~IResourceAllocatorBase() {
+    m_engine->memory().removeResourceAllocator(*this);
+}
 
 template<typename T, typename TCreateInfo>
 Resource<T, TCreateInfo>::Resource(IResourceAllocator<T, TCreateInfo>& allocator, RawResource<T>& resource) {

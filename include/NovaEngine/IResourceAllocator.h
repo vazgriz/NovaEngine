@@ -1,8 +1,24 @@
 #pragma once
 #include "NovaEngine/IRawAllocator.h"
-#include "NovaEngine/Memory.h"
 
 namespace Nova {
+    class Engine;
+
+    class IResourceAllocatorBase {
+    public:
+        IResourceAllocatorBase(Engine& engine);
+        IResourceAllocatorBase(const IResourceAllocatorBase& other) = delete;
+        IResourceAllocatorBase& operator = (const IResourceAllocatorBase& other) = delete;
+        IResourceAllocatorBase(IResourceAllocatorBase&& other) = default;
+        IResourceAllocatorBase& operator = (IResourceAllocatorBase&& other) = default;
+        virtual ~IResourceAllocatorBase();
+
+        virtual void update(size_t completed) = 0;
+
+    protected:
+        Engine* m_engine;
+    };
+
     template<typename T, typename TCreateInfo>
     class IResourceAllocator;
 
@@ -34,7 +50,6 @@ namespace Nova {
     class IResourceAllocator {
     public:
         virtual Resource<T, TCreateInfo> allocate(const TCreateInfo& info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) = 0;
-        virtual void update(size_t completed) = 0;
         virtual void registerUsage(RawResource<T>* resource, size_t frame) = 0;
         virtual void free(RawResource<T>* resource) = 0;
     };

@@ -369,7 +369,7 @@ int main() {
                 freeCam.update(delta);
                 camera.update(transferNode);
                 graph.submit();
-                allocator.update(graph.completedFrames());
+                engine.memory().update(graph.completedFrames());
                 renderGraph.reset();
             }
         }

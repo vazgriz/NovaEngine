@@ -1,10 +1,12 @@
 #pragma once
 #include <VulkanWrapper/VulkanWrapper.h>
+#include <unordered_set>
 #include "NovaEngine/IAllocator.h"
 #include "NovaEngine/FreeListAllocator.h"
 
 namespace Nova {
     class Engine;
+    class IResourceAllocatorBase;
 
     struct MemoryAllocation;
 
@@ -41,10 +43,15 @@ namespace Nova {
         MemoryAllocation allocate(uint32_t type, size_t size);
         void free(MemoryAllocation allocation);
 
+        void addResourceAllocator(IResourceAllocatorBase& allocator);
+        void removeResourceAllocator(IResourceAllocatorBase& allocator);
+        void update(size_t completed);
+
     private:
         Engine* m_engine;
         vk::MemoryProperties m_properties;
         std::vector<std::vector<Page>> m_pages;
+        std::unordered_set<IResourceAllocatorBase*> m_resourceAllocators;
     };
     
     struct MemoryAllocation {

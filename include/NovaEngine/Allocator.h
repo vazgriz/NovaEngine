@@ -7,7 +7,7 @@
 
 namespace Nova {
     template<typename T, typename TCreateInfo>
-    class Allocator : public IResourceAllocator<T, TCreateInfo> {
+    class Allocator : public IResourceAllocator<T, TCreateInfo>, public IResourceAllocatorBase {
         struct ResourceUsage {
             std::unique_ptr<RawResource<T>> resource;
             size_t usage = 0;
@@ -27,7 +27,6 @@ namespace Nova {
         void free(RawResource<T>* resource) override;
 
     private:
-        Engine* m_engine;
         RawAllocator<T, TCreateInfo> m_allocator;
         std::unordered_map<RawResource<T>*, ResourceUsage> m_resources;
         std::unordered_set<ResourceUsage*> m_dead;
