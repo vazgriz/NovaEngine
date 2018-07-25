@@ -358,6 +358,7 @@ int main() {
             camera.setSize({ swapchain.extent().width, swapchain.extent().height });
         });
 
+        window.setVisible(true);
         engine.run();
         graph.wait();
     }

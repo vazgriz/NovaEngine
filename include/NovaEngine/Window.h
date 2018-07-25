@@ -36,6 +36,8 @@ namespace Nova {
 
         bool shouldClose() const { return glfwWindowShouldClose(m_window.get()); }
         bool iconified() const { return m_iconified; }
+        void setVisible(bool visible);
+        bool visible() const;
         bool canRender() const;
 
         void setMouseLocked(bool locked);

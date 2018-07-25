@@ -12,6 +12,7 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
     m_physicalDevice = &m_renderer->device().physicalDevice();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_VISIBLE, 0);
     m_window = std::unique_ptr<GLFWwindow, void(*)(GLFWwindow*)>(
         glfwCreateWindow(width, height, title.size() > 0 ? title.c_str() : nullptr, nullptr, nullptr),
         glfwDestroyWindow
@@ -207,6 +208,19 @@ void Window::createImageViews() {
 }
 void Window::createInput() {
     m_input = std::make_unique<Input>(*m_engine, *this);
+}
+
+void Window::setVisible(bool visible) {
+    if (visible) {
+        glfwShowWindow(m_window.get());
+    } else {
+        glfwHideWindow(m_window.get());
+    }
+}
+
+bool Window::visible() const {
+    int visible = glfwGetWindowAttrib(m_window.get(), GLFW_VISIBLE);
+    return visible == 1;
 }
 
 void Window::setMouseLocked(bool locked) {
