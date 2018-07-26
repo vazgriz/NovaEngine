@@ -1,7 +1,6 @@
 #pragma once
 #include <VulkanWrapper/VulkanWrapper.h>
 #include "NovaEngine/Engine.h"
-#include "NovaEngine/QueueGraph.h"
 #include "NovaEngine/RawAllocator.h"
 #include "NovaEngine/IResourceAllocator.h"
 

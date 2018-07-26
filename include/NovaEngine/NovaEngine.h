@@ -1,8 +1,7 @@
 #include <NovaEngine/Renderer.h>
 #include <NovaEngine/Engine.h>
 #include <NovaEngine/Window.h>
-#include <NovaEngine/QueueGraph.h>
-#include <NovaEngine/RenderGraph.h>
+#include <NovaEngine/FrameGraph.h>
 #include <NovaEngine/Allocator.h>
 #include <NovaEngine/TransferNode.h>
 #include <NovaEngine/CameraManager.h>

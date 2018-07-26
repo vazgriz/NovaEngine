@@ -5,8 +5,7 @@ using namespace Nova;
 Engine::Engine(Renderer& renderer) {
     m_renderer = &renderer;
     m_memory = std::make_unique<Memory>(*this);
-    m_queueGraph = std::make_unique<QueueGraph>(*this);
-    m_renderGraph = std::make_unique<RenderGraph>(*this);
+    m_frameGraph = std::make_unique<FrameGraph>(*this);
     m_lastTime = static_cast<float>(glfwGetTime());
 }
 
@@ -16,7 +15,7 @@ void Engine::addWindow(Window& window) {
     }
 
     m_window = &window;
-    m_queueGraph->setFrames(m_window->swapchain().images().size());
+    m_frameGraph->setFrameCount(m_window->swapchain().images().size());
 }
 
 void Engine::addSystem(ISystem& system) {
@@ -38,9 +37,12 @@ void Engine::run() {
             for (auto system : m_systems) {
                 system->update(delta);
             }
-            m_queueGraph->submit();
-            m_renderGraph->reset();
-            m_memory->update(m_queueGraph->completedFrames());
+            m_frameGraph->submit();
+            m_memory->update(m_frameGraph->completedFrames());
         }
     }
+}
+
+void Engine::wait() {
+    m_renderer->device().waitIdle();
 }

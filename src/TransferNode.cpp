@@ -2,19 +2,18 @@
 
 using namespace Nova;
 
-TransferNode::TransferNode(Engine& engine, const vk::Queue& queue, QueueGraph& queueGraph, RenderGraph& renderGraph, size_t pageSize) : QueueNode(queue) {
+TransferNode::TransferNode(Engine& engine, const vk::Queue& queue, FrameGraph& frameGraph, size_t pageSize) : FrameNode(queue, vk::PipelineStageFlags::Transfer, vk::PipelineStageFlags::Transfer) {
     m_engine = &engine;
-    m_queueGraph = &queueGraph;
+    m_frameGraph = &frameGraph;
     m_pageSize = pageSize;
 
-    m_renderNode = &renderGraph.addNode(queue);
-    m_bufferUsage = &m_renderNode->addBufferUsage(vk::AccessFlags::TransferWrite);
-    m_imageUsage = &m_renderNode->addImageUsage(vk::AccessFlags::TransferWrite, vk::ImageLayout::TransferDstOptimal);
+    m_bufferUsage = &FrameNode::addBufferUsage(vk::AccessFlags::TransferWrite);
+    m_imageUsage = &FrameNode::addImageUsage(vk::AccessFlags::TransferWrite, vk::ImageLayout::TransferDstOptimal);
 
     findType();
 
-    m_onFrameCountChanged = m_queueGraph->onFrameCountChanged().connectMember<TransferNode>(*this, &TransferNode::resize);
-    resize(m_queueGraph->frameCount());
+    m_onFrameCountChanged = m_frameGraph->onFrameCountChanged().connectMember<TransferNode>(*this, &TransferNode::resize);
+    resize(m_frameGraph->frameCount());
 }
 
 void TransferNode::findType() {
@@ -40,7 +39,7 @@ void TransferNode::findType() {
 }
 
 size_t TransferNode::getFrame() {
-    return m_queueGraph->frame() % m_queueGraph->frameCount();
+    return m_frameGraph->frame() % m_frameGraph->frameCount();
 }
 
 void TransferNode::resize(size_t frames) {
@@ -55,7 +54,7 @@ void TransferNode::resize(size_t frames) {
     }
 }
 
-const std::vector<const vk::CommandBuffer*>& TransferNode::getCommands(size_t frame, size_t index) {
+std::vector<const vk::CommandBuffer*>& TransferNode::submit(size_t frame, size_t index) {
     m_commandBuffers.clear();
     StagingAllocator& allocator = m_allocators[index];
 
@@ -67,7 +66,7 @@ const std::vector<const vk::CommandBuffer*>& TransferNode::getCommands(size_t fr
 
     commandBuffer.begin(beginInfo);
 
-    m_renderNode->preRecord(commandBuffer, vk::PipelineStageFlags::TopOfPipe, vk::PipelineStageFlags::Transfer);
+    FrameNode::preRecord(commandBuffer);
 
     for (auto& transfer : m_transfers) {
         if (transfer.buffer != nullptr) {
@@ -94,7 +93,7 @@ const std::vector<const vk::CommandBuffer*>& TransferNode::getCommands(size_t fr
         }
     }
 
-    m_renderNode->postRecord(commandBuffer, vk::PipelineStageFlags::Transfer, vk::PipelineStageFlags::BottomOfPipe);
+    FrameNode::postRecord(commandBuffer);
 
     commandBuffer.end();
     m_commandBuffers.push_back(&commandBuffer);
@@ -121,8 +120,8 @@ void TransferNode::transfer(const void* data, const Buffer& buffer, vk::BufferCo
     transfer.bufferCopy = { offset, copy.dstOffset, copy.size };
     m_transfers.push_back(transfer);
 
-    buffer.registerUsage(m_queueGraph->frame());
-    m_bufferUsage->add(transfer.buffer->resource(), copy.dstOffset, copy.size);
+    buffer.registerUsage(m_frameGraph->frame());
+    m_bufferUsage->add(*transfer.buffer, copy.dstOffset, copy.size);
 }
 
 void TransferNode::transfer(const void* data, const Image& image, vk::ImageLayout imageLayout, vk::BufferImageCopy copy) {
@@ -148,6 +147,6 @@ void TransferNode::transfer(const void* data, const Image& image, vk::ImageLayou
     range.baseMipLevel = copy.imageSubresource.mipLevel;
     range.levelCount = 1;
 
-    image.registerUsage(m_queueGraph->frame());
-    m_imageUsage->add(transfer.image->resource(), range);
+    image.registerUsage(m_frameGraph->frame());
+    m_imageUsage->add(*transfer.image, range);
 }

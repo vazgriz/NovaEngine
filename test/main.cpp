@@ -63,15 +63,14 @@ vk::ShaderModule loadShader(vk::Device& device, const std::string& fileName) {
     return vk::ShaderModule(device, info);
 }
 
-class TestNode : public Nova::QueueNode {
+class TestNode : public Nova::FrameNode {
 public:
-    TestNode(const vk::Queue& queue, vk::Swapchain& swapchain, Nova::BufferAllocator& allocator, Nova::TransferNode& transferNode, Nova::RenderGraph& renderGraph, Nova::Camera& camera) : QueueNode(queue) {
+    TestNode(const vk::Queue& queue, vk::Swapchain& swapchain, Nova::BufferAllocator& allocator, Nova::TransferNode& transferNode, Nova::Camera& camera) : FrameNode(queue, vk::PipelineStageFlags::VertexInput, vk::PipelineStageFlags::ColorAttachmentOutput) {
         m_allocator = &allocator;
         m_transferNode = &transferNode;
         m_camera = &camera;
 
-        m_renderNode = &renderGraph.addNode(queue);
-        m_bufferUsage = &m_renderNode->addBufferUsage(vk::AccessFlags::VertexAttributeRead);
+        m_bufferUsage = &FrameNode::addBufferUsage(vk::AccessFlags::VertexAttributeRead);
 
         createSemaphores();
         createVertexBuffer();
@@ -89,14 +88,12 @@ public:
 
     vk::Semaphore& acquireSemaphore() { return *m_acquireSemaphore; }
     vk::Semaphore& renderSemaphore() { return *m_renderSemaphore; }
-    Nova::RenderNode& renderNode() const { return *m_renderNode; }
     Nova::BufferUsage& bufferUsage() const { return *m_bufferUsage; }
 
 private:
     vk::Swapchain* m_swapchain;
     Nova::BufferAllocator* m_allocator;
     Nova::TransferNode* m_transferNode;
-    Nova::RenderNode* m_renderNode;
     Nova::BufferUsage* m_bufferUsage;
     Nova::Camera* m_camera;
     std::unique_ptr<vk::Semaphore> m_acquireSemaphore;
@@ -122,7 +119,7 @@ private:
         m_vertexBuffer->registerUsage(frame);
     }
 
-    std::vector<const vk::CommandBuffer*>& getCommands(size_t frame, size_t index) override {
+    std::vector<const vk::CommandBuffer*>& submit(size_t frame, size_t index) override {
         vk::CommandBuffer& commandBuffer = commandBuffers()[index];
         commandBuffer.reset(vk::CommandBufferResetFlags::None);
 
@@ -131,7 +128,7 @@ private:
 
         commandBuffer.begin(beginInfo);
 
-        m_renderNode->preRecord(commandBuffer, vk::PipelineStageFlags::TopOfPipe, vk::PipelineStageFlags::VertexInput);
+        FrameNode::preRecord(commandBuffer);
 
         vk::RenderPassBeginInfo renderPassInfo = {};
         renderPassInfo.renderPass = m_renderPass.get();
@@ -148,7 +145,7 @@ private:
 
         commandBuffer.endRenderPass();
 
-        m_renderNode->postRecord(commandBuffer, vk::PipelineStageFlags::ColorAttachmentOutput, vk::PipelineStageFlags::BottomOfPipe);
+        FrameNode::postRecord(commandBuffer);
 
         commandBuffer.end();
 
@@ -232,7 +229,7 @@ private:
         vk::BufferCopy copy = {};
         copy.size = vertices.size() * sizeof(Vertex);
         m_transferNode->transfer(vertices.data(), *m_vertexBuffer, copy);
-        m_bufferUsage->add(m_vertexBuffer->resource(), 0, copy.size);
+        m_bufferUsage->add(*m_vertexBuffer, 0, copy.size);
     }
 
     void createPipelineLayout() {
@@ -326,11 +323,9 @@ int main() {
         Nova::BufferAllocator allocator = Nova::BufferAllocator(engine, 256 * 1024 * 1024);
 
         Nova::Window window = Nova::Window(engine, 800, 600);
-        Nova::QueueGraph& graph = engine.queueGraph();
+        Nova::FrameGraph& graph = engine.frameGraph();
 
-        Nova::RenderGraph& renderGraph = engine.renderGraph();
-
-        auto transferNode = Nova::TransferNode(engine, renderer.transferQueue(), graph, renderGraph, 64 * 1024 * 1024);
+        auto transferNode = Nova::TransferNode(engine, renderer.transferQueue(), graph, 64 * 1024 * 1024);
 
         Nova::CameraManager cameraManager = Nova::CameraManager(transferNode);
         Nova::PerspectiveCamera camera = Nova::PerspectiveCamera(engine, cameraManager, allocator, { window.width(), window.height() }, 90.0f);
@@ -340,27 +335,24 @@ int main() {
         engine.addSystem(cameraManager);
         engine.addSystem(freeCam);
 
-        auto node = TestNode(renderer.graphicsQueue(), window.swapchain(), allocator, transferNode, renderGraph, camera);
+        auto node = TestNode(renderer.graphicsQueue(), window.swapchain(), allocator, transferNode, camera);
 
         graph.addNode(transferNode);
         graph.addNode(node);
-        graph.addEdge(transferNode, node, vk::PipelineStageFlags::VertexInput);
+        graph.addEdge(transferNode, node);
         graph.addExternalWait(node, node.acquireSemaphore(), vk::PipelineStageFlags::ColorAttachmentOutput);
         graph.addExternalSignal(node, node.renderSemaphore());
         graph.bake();
 
-        renderGraph.addEdge(transferNode.renderNode(), node.renderNode());
-        renderGraph.bake();
-
         auto slot1 = window.onSwapchainChanged().connect([&](vk::Swapchain& swapchain) {
-            graph.setFrames(swapchain.images().size());
+            graph.setFrameCount(swapchain.images().size());
             node.setSwapchain(swapchain);
             camera.setSize({ swapchain.extent().width, swapchain.extent().height });
         });
 
         window.setVisible(true);
         engine.run();
-        graph.wait();
+        engine.wait();
     }
 
     glfwTerminate();

@@ -2,7 +2,6 @@
 #include <VulkanWrapper/VulkanWrapper.h>
 #include "NovaEngine/Engine.h"
 #include "NovaEngine/Memory.h"
-#include "NovaEngine/QueueGraph.h"
 #include "NovaEngine/Signal.h"
 #include "NovaEngine/LinearAllocator.h"
 

@@ -3,8 +3,7 @@
 #include "NovaEngine/Renderer.h"
 #include "NovaEngine/Window.h"
 #include "NovaEngine/Memory.h"
-#include "NovaEngine/QueueGraph.h"
-#include "NovaEngine/RenderGraph.h"
+#include "NovaEngine/FrameGraph.h"
 #include "NovaEngine/ISystem.h"
 
 namespace Nova {
@@ -19,19 +18,18 @@ namespace Nova {
         Renderer& renderer() { return *m_renderer; }
         Memory& memory() { return *m_memory; }
         Window& window() { return *m_window; }
-        QueueGraph& queueGraph() { return *m_queueGraph; }
-        RenderGraph& renderGraph() { return *m_renderGraph; }
+        FrameGraph& frameGraph() { return *m_frameGraph; }
 
         void addSystem(ISystem& system);
         void run();
+        void wait();
 
     private:
         friend class Window;
         Renderer* m_renderer = nullptr;
         Window* m_window = nullptr;
         std::unique_ptr<Memory> m_memory;
-        std::unique_ptr<QueueGraph> m_queueGraph;
-        std::unique_ptr<RenderGraph> m_renderGraph;
+        std::unique_ptr<FrameGraph> m_frameGraph;
         std::vector<ISystem*> m_systems;
         float m_lastTime;
 

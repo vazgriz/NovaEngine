@@ -13,8 +13,7 @@ add_library(NovaEngine
     "src/Engine.cpp"
     "src/Renderer.cpp"
     "src/Window.cpp"
-    "src/QueueGraph.cpp"
-    "src/RenderGraph.cpp"
+    "src/FrameGraph.cpp"
     "src/Memory.cpp"
     "src/IAllocator.cpp"
     "src/LinearAllocator.cpp"
@@ -31,6 +30,7 @@ add_library(NovaEngine
     "src/PerspectiveCamera.cpp"
     "src/Input.cpp"
     "src/FreeCam.cpp"
+    "src/FrameGraph.cpp"
 )
 target_include_directories(NovaEngine
     PUBLIC "${PROJECT_SOURCE_DIR}/include"
