@@ -56,8 +56,6 @@ namespace Nova {
         Signal<size_t>& onFrameCountChanged() const { return *m_onFrameCountChanged; }
 
         void addNode(FrameNode& node);
-        void addExternalSignal(FrameNode& node, vk::Semaphore& semaphore);
-        void addExternalWait(FrameNode& node, vk::Semaphore& semaphore, vk::PipelineStageFlags waitMask);
         void addEdge(FrameNode& source, FrameNode& dest);
         void setFrameCount(size_t frames);
         void bake();
@@ -137,7 +135,8 @@ namespace Nova {
         virtual ~FrameNode() { }
 
         const vk::Queue& queue() const { return *m_queue; }
-
+        void addExternalWait(vk::Semaphore& semaphore, vk::PipelineStageFlags stageMask);
+        void addExternalSignal(vk::Semaphore& semaphore);
 
         void preRecord(vk::CommandBuffer& commandBuffer);
         void postRecord(vk::CommandBuffer& commandBuffer);

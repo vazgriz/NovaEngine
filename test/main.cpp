@@ -86,8 +86,6 @@ public:
         createPipeline();
     }
 
-    vk::Semaphore& acquireSemaphore() { return *m_acquireSemaphore; }
-    vk::Semaphore& renderSemaphore() { return *m_renderSemaphore; }
     Nova::BufferUsage& bufferUsage() const { return *m_bufferUsage; }
 
 private:
@@ -112,6 +110,9 @@ private:
 
         m_acquireSemaphore = std::make_unique<vk::Semaphore>(queue().device(), info);
         m_renderSemaphore = std::make_unique<vk::Semaphore>(queue().device(), info);
+
+        FrameNode::addExternalWait(*m_acquireSemaphore, vk::PipelineStageFlags::ColorAttachmentOutput);
+        FrameNode::addExternalSignal(*m_renderSemaphore);
     }
 
     void preSubmit(size_t frame) override {
@@ -340,8 +341,6 @@ int main() {
         graph.addNode(transferNode);
         graph.addNode(node);
         graph.addEdge(transferNode, node);
-        graph.addExternalWait(node, node.acquireSemaphore(), vk::PipelineStageFlags::ColorAttachmentOutput);
-        graph.addExternalSignal(node, node.renderSemaphore());
         graph.bake();
 
         auto slot1 = window.onSwapchainChanged().connect([&](vk::Swapchain& swapchain) {

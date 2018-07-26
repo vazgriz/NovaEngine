@@ -77,6 +77,15 @@ void FrameNode::clearInstances() {
     m_imageMap.clear();
 }
 
+void FrameNode::addExternalWait(vk::Semaphore& semaphore, vk::PipelineStageFlags stageMask) {
+    m_externalWaits.push_back(&semaphore);
+    m_externalWaitMasks.push_back(stageMask);
+}
+
+void FrameNode::addExternalSignal(vk::Semaphore& semaphore) {
+    m_externalSignals.push_back(&semaphore);
+}
+
 void FrameNode::preRecord(vk::CommandBuffer& commandBuffer) {
     for (auto event : m_inEvents) {
         event->recordDest(commandBuffer);
@@ -231,15 +240,6 @@ FrameGraph::FrameGraph(Engine& engine) {
 
 void FrameGraph::addNode(FrameNode& node) {
     m_nodes.push_back(&node);
-}
-
-void FrameGraph::addExternalSignal(FrameNode& node, vk::Semaphore& semaphore) {
-    node.m_externalSignals.push_back(&semaphore);
-}
-
-void FrameGraph::addExternalWait(FrameNode& node, vk::Semaphore& semaphore, vk::PipelineStageFlags waitMask) {
-    node.m_externalWaits.push_back(&semaphore);
-    node.m_externalWaitMasks.push_back(waitMask);
 }
 
 void FrameGraph::addEdge(FrameNode& source, FrameNode& dest) {
