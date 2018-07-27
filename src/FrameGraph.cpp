@@ -340,13 +340,13 @@ void FrameGraph::createGroups() {
             group->addNode(currentNode);
             currentNode->m_group = group.get();
 
-            for (auto signal : node->m_externalSignals) {
+            for (auto signal : currentNode->m_externalSignals) {
                 group->info.signalSemaphores.push_back(*signal);
             }
 
-            for (size_t i = 0; i < node->m_externalWaits.size(); i++) {
-                group->info.waitSemaphores.push_back(*node->m_externalWaits[i]);
-                group->info.waitDstStageMask.push_back(node->m_externalWaitMasks[i]);
+            for (size_t i = 0; i < currentNode->m_externalWaits.size(); i++) {
+                group->info.waitSemaphores.push_back(*currentNode->m_externalWaits[i]);
+                group->info.waitDstStageMask.push_back(currentNode->m_externalWaitMasks[i]);
             }
         }
 
@@ -370,13 +370,15 @@ void FrameGraph::createSemaphores() {
         }
 
         for (auto outGroup : outGroups) {
-            vk::SemaphoreCreateInfo info = {};
-            m_semaphores.emplace_back(std::make_unique<vk::Semaphore>(m_engine->renderer().device(), info));
-            auto& semaphore = *m_semaphores.back();
+            if (group->family != outGroup->family) {
+                vk::SemaphoreCreateInfo info = {};
+                m_semaphores.emplace_back(std::make_unique<vk::Semaphore>(m_engine->renderer().device(), info));
+                auto& semaphore = *m_semaphores.back();
 
-            group->info.signalSemaphores.push_back(semaphore);
-            outGroup->info.waitSemaphores.push_back(semaphore);
-            outGroup->info.waitDstStageMask.push_back(group->destStages);
+                group->info.signalSemaphores.push_back(semaphore);
+                outGroup->info.waitSemaphores.push_back(semaphore);
+                outGroup->info.waitDstStageMask.push_back(group->destStages);
+            }
         }
     }
 }
