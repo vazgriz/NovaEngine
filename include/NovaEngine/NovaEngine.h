@@ -8,3 +8,4 @@
 #include <NovaEngine/Camera.h>
 #include <NovaEngine/PerspectiveCamera.h>
 #include <NovaEngine/FreeCam.h>
+#include <NovaEngine/Texture.h>
