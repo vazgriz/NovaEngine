@@ -40,7 +40,7 @@ namespace Nova {
         RawAllocator(RawAllocator&& other) = default;
         RawAllocator& operator = (RawAllocator&& other) = default;
     
-        RawResource<T> allocate(TCreateInfo info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) override;
+        RawResource<T> allocate(const TCreateInfo& info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) override;
     
     private:
         Engine* m_engine;

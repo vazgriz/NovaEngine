@@ -22,6 +22,6 @@ namespace Nova {
     template <typename T, typename TCreateInfo>
     class IRawAllocator {
     public:
-        virtual RawResource<T> allocate(TCreateInfo info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) = 0;
+        virtual RawResource<T> allocate(const TCreateInfo& info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) = 0;
     };
 }
