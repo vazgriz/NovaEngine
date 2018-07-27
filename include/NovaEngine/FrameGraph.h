@@ -29,8 +29,8 @@ namespace Nova {
             void submit(size_t frame, size_t index, vk::Fence& fence);
         };
 
-        struct Event {
-            Event(FrameNode& source, FrameNode& dest);
+        struct Edge {
+            Edge(FrameNode& source, FrameNode& dest);
             void buildBarriers();
             void recordSource(vk::CommandBuffer& commandBuffer);
             void recordDest(vk::CommandBuffer& commandBuffer);
@@ -70,7 +70,7 @@ namespace Nova {
         size_t m_frame = 1;
         std::vector<std::unique_ptr<Group>> m_groups;
         std::vector<std::unique_ptr<vk::Semaphore>> m_semaphores;
-        std::vector<std::unique_ptr<Event>> m_events;
+        std::vector<std::unique_ptr<Edge>> m_events;
         std::vector<std::vector<vk::Fence>> m_fences;
         std::unique_ptr<Signal<size_t>> m_onFrameCountChanged;
 
@@ -81,7 +81,7 @@ namespace Nova {
 
     class BufferUsage {
         friend class FrameNode;
-        friend struct FrameGraph::Event;
+        friend struct FrameGraph::Edge;
 
         struct Instance {
             vk::Buffer* buffer;
@@ -102,7 +102,7 @@ namespace Nova {
 
     class ImageUsage {
         friend class FrameNode;
-        friend struct FrameGraph::Event;
+        friend struct FrameGraph::Edge;
 
         struct Instance {
             vk::Image* image;
@@ -163,8 +163,8 @@ namespace Nova {
         std::vector<vk::Semaphore*> m_externalSignals;
         std::vector<vk::Semaphore*> m_externalWaits;
         std::vector<vk::PipelineStageFlags> m_externalWaitMasks;
-        std::vector<FrameGraph::Event*> m_inEvents;
-        std::vector<FrameGraph::Event*> m_outEvents;
+        std::vector<FrameGraph::Edge*> m_inEvents;
+        std::vector<FrameGraph::Edge*> m_outEvents;
         std::vector<std::unique_ptr<BufferUsage>> m_bufferUsages;
         std::vector<std::unique_ptr<ImageUsage>> m_imageUsages;
         std::unordered_map<vk::Buffer*, BufferUsage::Instance> m_bufferMap;

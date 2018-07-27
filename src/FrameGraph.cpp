@@ -125,7 +125,7 @@ void FrameGraph::Group::submit(size_t frame, size_t index, vk::Fence& fence) {
     queue->submit({ info }, &fence);
 }
 
-FrameGraph::Event::Event(FrameNode& source, FrameNode& dest) {
+FrameGraph::Edge::Edge(FrameNode& source, FrameNode& dest) {
     this->source = &source;
     this->dest = &dest;
 
@@ -136,7 +136,7 @@ FrameGraph::Event::Event(FrameNode& source, FrameNode& dest) {
     }
 }
 
-void FrameGraph::Event::buildBarriers() {
+void FrameGraph::Edge::buildBarriers() {
     sourceBufferBarriers.clear();
     sourceImageBarriers.clear();
     destBufferBarriers.clear();
@@ -216,7 +216,7 @@ void FrameGraph::Event::buildBarriers() {
     }
 }
 
-void FrameGraph::Event::recordSource(vk::CommandBuffer& commandBuffer) {
+void FrameGraph::Edge::recordSource(vk::CommandBuffer& commandBuffer) {
     if (event != nullptr) {
         commandBuffer.pipelineBarrier(source->m_destStages, dest->m_destStages, {}, {}, sourceBufferBarriers, sourceImageBarriers);
         commandBuffer.setEvent(*event, source->m_destStages);
@@ -225,7 +225,7 @@ void FrameGraph::Event::recordSource(vk::CommandBuffer& commandBuffer) {
     }
 }
 
-void FrameGraph::Event::recordDest(vk::CommandBuffer& commandBuffer) {
+void FrameGraph::Edge::recordDest(vk::CommandBuffer& commandBuffer) {
     if (event != nullptr) {
         commandBuffer.waitEvents({ *event }, source->m_destStages, dest->m_sourceStages, {}, destBufferBarriers, destImageBarriers);
     } else {
@@ -243,7 +243,7 @@ void FrameGraph::addNode(FrameNode& node) {
 }
 
 void FrameGraph::addEdge(FrameNode& source, FrameNode& dest) {
-    m_events.emplace_back(std::make_unique<FrameGraph::Event>(source, dest));
+    m_events.emplace_back(std::make_unique<FrameGraph::Edge>(source, dest));
     auto& event = *m_events.back();
     source.m_outEvents.push_back(&event);
     dest.m_inEvents.push_back(&event);
