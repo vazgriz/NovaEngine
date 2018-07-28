@@ -49,15 +49,15 @@ MemoryAllocation Memory::allocate(uint32_t type, size_t size) {
     if (size > PAGE_SIZE) throw std::runtime_error("Allocation too large");
 
     for (auto& page : m_pages[type]) {
-        MemoryAllocation result = page.tryAllocate(size);
+        MemoryAllocation result = page->tryAllocate(size);
         if (result.memory != nullptr) {
             return result;
         }
     }
 
-    m_pages[type].emplace_back(m_engine->renderer().device(), type, PAGE_SIZE);
+    m_pages[type].emplace_back(std::make_unique<Page>(m_engine->renderer().device(), type, PAGE_SIZE));
 
-    return m_pages[type].back().tryAllocate(size);
+    return m_pages[type].back()->tryAllocate(size);
 }
 
 void Memory::free(MemoryAllocation allocation) {
@@ -65,8 +65,8 @@ void Memory::free(MemoryAllocation allocation) {
 
     uint32_t type = allocation.memory->memory().typeIndex();
     for (auto& page : m_pages[type]) {
-        if (&page == allocation.memory) {
-            page.free(allocation);
+        if (page.get() == allocation.memory) {
+            page->free(allocation);
         }
     }
 }

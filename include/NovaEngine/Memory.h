@@ -15,6 +15,10 @@ namespace Nova {
         class Page {
         public:
             Page(vk::Device& device, uint32_t type, size_t size);
+            Page(const Page& other) = delete;
+            Page& operator = (const Page& other) = delete;
+            Page(Page&& other) = default;
+            Page& operator = (Page&& other) = default;
 
             vk::DeviceMemory& memory() const { return *m_memory; }
             vk::MemoryPropertyFlags flags() const { return m_flags; }
@@ -50,7 +54,7 @@ namespace Nova {
     private:
         Engine* m_engine;
         vk::MemoryProperties m_properties;
-        std::vector<std::vector<Page>> m_pages;
+        std::vector<std::vector<std::unique_ptr<Page>>> m_pages;
         std::unordered_set<IResourceAllocatorBase*> m_resourceAllocators;
     };
     
