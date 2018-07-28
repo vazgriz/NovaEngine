@@ -11,8 +11,8 @@ namespace Nova {
         StagingAllocator(Engine& engine, size_t pageSize, uint32_t type);
         StagingAllocator(const StagingAllocator& other) = delete;
         StagingAllocator& operator = (const StagingAllocator& other) = delete;
-        StagingAllocator(StagingAllocator&& other) = default;
-        StagingAllocator& operator = (StagingAllocator&& other) = default;
+        StagingAllocator(StagingAllocator&& other);
+        StagingAllocator& operator = (StagingAllocator&& other);
         ~StagingAllocator();
 
         vk::Buffer& buffer() const { return *m_buffer; }
@@ -25,6 +25,6 @@ namespace Nova {
         Memory* m_memory;
         std::unique_ptr<LinearAllocator> m_allocator;
         std::unique_ptr<vk::Buffer> m_buffer;
-        MemoryAllocation m_page;
+        MemoryAllocation m_page = {};
     };
 }

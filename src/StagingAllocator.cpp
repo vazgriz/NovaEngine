@@ -17,6 +17,25 @@ StagingAllocator::StagingAllocator(Engine& engine, size_t pageSize, uint32_t typ
     m_buffer->bind(m_page.memory->memory(), m_page.offset);
 }
 
+StagingAllocator::StagingAllocator(StagingAllocator&& other) {
+    m_engine = other.m_engine;
+    m_memory = other.m_memory;
+    m_allocator = std::move(other.m_allocator);
+    m_buffer = std::move(other.m_buffer);
+    m_page = other.m_page;
+    other.m_page = {};
+}
+
+StagingAllocator& StagingAllocator::operator = (StagingAllocator&& other) {
+    m_engine = other.m_engine;
+    m_memory = other.m_memory;
+    m_allocator = std::move(other.m_allocator);
+    m_buffer = std::move(other.m_buffer);
+    m_page = other.m_page;
+    other.m_page = {};
+    return *this;
+}
+
 StagingAllocator::~StagingAllocator() {
     m_memory->free(m_page);
 }
