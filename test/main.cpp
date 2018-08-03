@@ -5,40 +5,16 @@
 #include <glm/glm.hpp>
 #include <fstream>
 
-struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 color;
-
-    static std::vector<vk::VertexInputAttributeDescription> getAttributes() {
-        vk::VertexInputAttributeDescription att1 = {};
-        att1.binding = 0;
-        att1.format = vk::Format::R32G32B32_Sfloat;
-        att1.location = 0;
-        att1.offset = 0;
-
-        vk::VertexInputAttributeDescription att2 = {};
-        att2.binding = 0;
-        att2.format = vk::Format::R32G32B32_Sfloat;
-        att2.location = 1;
-        att2.offset = sizeof(glm::vec3);
-
-        return { att1, att2 };
-    }
-
-    static std::vector<vk::VertexInputBindingDescription> getBindings() {
-        vk::VertexInputBindingDescription binding = {};
-        binding.binding = 0;
-        binding.inputRate = vk::VertexInputRate::Vertex;
-        binding.stride = sizeof(Vertex);
-
-        return { binding };
-    }
+std::vector<glm::vec3> vertexPositions = {
+    { -1.0f, -1.0f, 0.0f },
+    {  0.0f,  1.0f, 0.0f },
+    {  1.0f, -1.0f, 0.0f },
 };
 
-std::vector<Vertex> vertices = {
-    { { -1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-    { {  0.0f,  1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-    { {  1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+std::vector<glm::vec3> vertexColors = {
+    { 1.0f, 0.0f, 0.0f },
+    { 0.0f, 1.0f, 0.0f },
+    { 0.0f, 0.0f, 1.0f }
 };
 
 std::vector<char> loadFile(const std::string& fileName) {
@@ -73,7 +49,7 @@ public:
         m_bufferUsage = &FrameNode::addBufferUsage(vk::AccessFlags::VertexAttributeRead);
 
         createSemaphores();
-        createVertexBuffer();
+        createMesh();
         createPipelineLayout();
         setSwapchain(swapchain);
     }
@@ -101,7 +77,7 @@ private:
     std::unique_ptr<vk::RenderPass> m_renderPass;
     std::vector<vk::ImageView> m_imageViews;
     std::vector<vk::Framebuffer> m_framebuffers;
-    std::unique_ptr<Nova::Buffer> m_vertexBuffer;
+    std::unique_ptr<Nova::Mesh> m_mesh;
     std::unique_ptr<vk::PipelineLayout> m_pipelineLayout;
     std::unique_ptr<vk::Pipeline> m_pipeline;
 
@@ -117,7 +93,7 @@ private:
 
     void preSubmit(size_t frame) override {
         m_swapchain->acquireNextImage(~0, m_acquireSemaphore.get(), nullptr, m_index);
-        m_vertexBuffer->registerUsage(frame);
+        m_mesh->registerUsage(frame);
     }
 
     std::vector<const vk::CommandBuffer*>& submit(size_t frame, size_t index) override {
@@ -140,7 +116,7 @@ private:
         commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::Inline);
 
         commandBuffer.bindPipeline(vk::PipelineBindPoint::Graphics, *m_pipeline);
-        commandBuffer.bindVertexBuffers(0, { m_vertexBuffer->resource() }, { 0 });
+        m_mesh->bind(commandBuffer);
         commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::Graphics, *m_pipelineLayout, 0, { m_camera->descriptor() }, {});
         commandBuffer.draw(3, 1, 0, 0);
 
@@ -220,17 +196,16 @@ private:
         }
     }
 
-    void createVertexBuffer() {
-        vk::BufferCreateInfo info = {};
-        info.size = vertices.size() * sizeof(Vertex);
-        info.usage = vk::BufferUsageFlags::VertexBuffer | vk::BufferUsageFlags::TransferDst;
+    void createMesh() {
+        auto positionData = std::make_shared<Nova::VertexData>(*m_allocator);
+        positionData->fill(*m_transferNode, vk::Format::R32G32B32_Sfloat, vertexPositions.data(), 3);
 
-        m_vertexBuffer = std::make_unique<Nova::Buffer>(m_allocator->allocate(info, vk::MemoryPropertyFlags::DeviceLocal, {}));
+        auto colorData = std::make_shared<Nova::VertexData>(*m_allocator);
+        colorData->fill(*m_transferNode, vk::Format::R32G32B32_Sfloat, vertexColors.data(), 3);
 
-        vk::BufferCopy copy = {};
-        copy.size = vertices.size() * sizeof(Vertex);
-        m_transferNode->transfer(vertices.data(), *m_vertexBuffer, copy);
-        m_bufferUsage->add(*m_vertexBuffer, 0, copy.size);
+        m_mesh = std::make_unique<Nova::Mesh>();
+        m_mesh->addVertexData(positionData);
+        m_mesh->addVertexData(colorData);
     }
 
     void createPipelineLayout() {
@@ -255,8 +230,8 @@ private:
         fragStage.name = "main";
 
         vk::PipelineVertexInputStateCreateInfo vertexInput = {};
-        vertexInput.vertexAttributeDescriptions = Vertex::getAttributes();
-        vertexInput.vertexBindingDescriptions = Vertex::getBindings();
+        vertexInput.vertexAttributeDescriptions = m_mesh->getAttributes();
+        vertexInput.vertexBindingDescriptions = m_mesh->getBindings();
 
         vk::PipelineInputAssemblyStateCreateInfo inputAssembly = {};
         inputAssembly.topology = vk::PrimitiveTopology::TriangleList;

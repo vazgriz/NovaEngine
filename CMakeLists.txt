@@ -32,6 +32,7 @@ add_library(NovaEngine
     "src/FreeCam.cpp"
     "src/FrameGraph.cpp"
     "src/Texture.cpp"
+    "src/Mesh.cpp"
 )
 target_include_directories(NovaEngine
     PUBLIC "${PROJECT_SOURCE_DIR}/include"

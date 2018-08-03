@@ -9,3 +9,4 @@
 #include <NovaEngine/PerspectiveCamera.h>
 #include <NovaEngine/FreeCam.h>
 #include <NovaEngine/Texture.h>
+#include <NovaEngine/Mesh.h>
