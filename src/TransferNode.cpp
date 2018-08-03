@@ -105,7 +105,7 @@ std::vector<const vk::CommandBuffer*>& TransferNode::submit(size_t frame, size_t
 
 void TransferNode::transfer(const void* data, const Buffer& buffer, vk::BufferCopy copy) {
     if (buffer.page().mapping() != nullptr) {
-        //for buffers that are host-visible (eg NUMA)
+        //for buffers that are host-visible (eg UMA)
         void* dest = static_cast<void*>(static_cast<char*>(buffer.page().mapping()) + buffer.offset() + copy.dstOffset);
         memcpy(dest, data, copy.size);
         return;
