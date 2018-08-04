@@ -3,10 +3,8 @@
 
 using namespace Nova;
 
-Camera::Camera(Engine& engine, CameraManager& cameraManager, BufferAllocator& allocator, glm::ivec2 size) {
-    m_engine = &engine;
+Camera::Camera(CameraManager& cameraManager, glm::ivec2 size) {
     m_manager = &cameraManager;
-    m_allocator = &allocator;
     m_size = size;
 
     createPool();
@@ -57,7 +55,7 @@ void Camera::createPool() {
     info.maxSets = 1;
     info.poolSizes = { size };
 
-    m_descriptorPool = std::make_unique<vk::DescriptorPool>(m_engine->renderer().device(), info);
+    m_descriptorPool = std::make_unique<vk::DescriptorPool>(m_manager->engine().renderer().device(), info);
 }
 
 void Camera::createLayout() {
@@ -70,7 +68,7 @@ void Camera::createLayout() {
     vk::DescriptorSetLayoutCreateInfo info = {};
     info.bindings = { binding };
 
-    m_layout = std::make_unique<vk::DescriptorSetLayout>(m_engine->renderer().device(), info);
+    m_layout = std::make_unique<vk::DescriptorSetLayout>(m_manager->engine().renderer().device(), info);
 }
 
 void Camera::createBuffer() {
@@ -78,7 +76,7 @@ void Camera::createBuffer() {
     info.size = sizeof(CameraInfo);
     info.usage = vk::BufferUsageFlags::UniformBuffer | vk::BufferUsageFlags::TransferDst;
 
-    m_buffer = std::make_unique<Buffer>(m_allocator->allocate(info, vk::MemoryPropertyFlags::DeviceLocal, {}));
+    m_buffer = std::make_unique<Buffer>(m_manager->allocator().allocate(info, vk::MemoryPropertyFlags::DeviceLocal, {}));
 }
 
 void Camera::createDescriptor() {
@@ -97,5 +95,5 @@ void Camera::createDescriptor() {
     write.descriptorType = vk::DescriptorType::UniformBuffer;
     write.bufferInfo = { bufferInfo };
 
-    vk::DescriptorSet::update(m_engine->renderer().device(), { write }, {});
+    vk::DescriptorSet::update(m_manager->engine().renderer().device(), { write }, {});
 }

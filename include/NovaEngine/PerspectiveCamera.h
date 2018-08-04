@@ -4,7 +4,7 @@
 namespace Nova {
     class PerspectiveCamera : public Camera {
     public:
-        PerspectiveCamera(Engine& engine, CameraManager& cameraManager, BufferAllocator& allocator, glm::ivec2 size, float fov, float near, float far);
+        PerspectiveCamera(CameraManager& cameraManager, glm::ivec2 size, float fov, float near, float far);
         PerspectiveCamera(const PerspectiveCamera& other) = delete;
         PerspectiveCamera& operator = (const PerspectiveCamera& other) = delete;
         PerspectiveCamera(PerspectiveCamera&& other) = default;

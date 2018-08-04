@@ -4,8 +4,8 @@
 
 using namespace Nova;
 
-PerspectiveCamera::PerspectiveCamera(Engine& engine, CameraManager& cameraManager, BufferAllocator& allocator, glm::ivec2 size, float fov, float near, float far)
-    : Camera(engine, cameraManager, allocator, size) {
+PerspectiveCamera::PerspectiveCamera(CameraManager& cameraManager, glm::ivec2 size, float fov, float near, float far)
+    : Camera(cameraManager, size) {
     m_fov = fov;
     m_near = near;
     m_far = far;

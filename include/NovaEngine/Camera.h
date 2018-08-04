@@ -16,7 +16,7 @@ namespace Nova {
         };
 
     public:
-        Camera(Engine& engine, CameraManager& cameraManager, BufferAllocator& allocator, glm::ivec2 size);
+        Camera(CameraManager& cameraManager, glm::ivec2 size);
         Camera(const Camera& other) = delete;
         Camera& operator = (const Camera& other) = delete;
         Camera(Camera&& other) = default;
@@ -37,9 +37,7 @@ namespace Nova {
         virtual glm::mat4 getProjection() = 0;
 
     private:
-        Engine* m_engine;
         CameraManager* m_manager;
-        BufferAllocator* m_allocator;
         std::unique_ptr<vk::DescriptorPool> m_descriptorPool;
         std::unique_ptr<vk::DescriptorSetLayout> m_layout;
         std::unique_ptr<vk::DescriptorSet> m_descriptor;
