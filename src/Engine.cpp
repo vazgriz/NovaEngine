@@ -1,5 +1,7 @@
 #include <NovaEngine/Engine.h>
 
+#define VIRTUAL_FRAMES 2
+
 using namespace Nova;
 
 Engine::Engine(Renderer& renderer) {
@@ -7,6 +9,7 @@ Engine::Engine(Renderer& renderer) {
     m_memory = std::make_unique<Memory>(*this);
     m_frameGraph = std::make_unique<FrameGraph>(*this);
     m_lastTime = static_cast<float>(glfwGetTime());
+    m_frameGraph->setFrameCount(VIRTUAL_FRAMES);
 }
 
 void Engine::addWindow(Window& window) {
@@ -15,7 +18,6 @@ void Engine::addWindow(Window& window) {
     }
 
     m_window = &window;
-    m_frameGraph->setFrameCount(m_window->swapchain().images().size());
 }
 
 void Engine::addSystem(ISystem& system) {

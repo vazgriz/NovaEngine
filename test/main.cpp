@@ -319,7 +319,6 @@ int main() {
         graph.bake();
 
         auto slot1 = window.onSwapchainChanged().connect([&](vk::Swapchain& swapchain) {
-            graph.setFrameCount(swapchain.images().size());
             node.setSwapchain(swapchain);
             camera.setSize({ swapchain.extent().width, swapchain.extent().height });
         });
