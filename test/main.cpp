@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <fstream>
 
+#define PAGE_SIZE (256 * 1024 * 1024)
+
 std::vector<glm::vec3> vertexPositions = {
     { -1.0f, -1.0f, 0.0f },
     {  0.0f,  1.0f, 0.0f },
@@ -41,11 +43,11 @@ vk::ShaderModule loadShader(vk::Device& device, const std::string& fileName) {
 
 class TestNode : public Nova::FrameNode {
 public:
-    TestNode(const vk::Queue& queue, vk::Swapchain& swapchain, Nova::BufferAllocator& allocator, Nova::TransferNode& transferNode, Nova::Camera& camera) : FrameNode(queue, vk::PipelineStageFlags::VertexInput, vk::PipelineStageFlags::ColorAttachmentOutput) {
-        m_allocator = &allocator;
+    TestNode(Nova::Engine& engine, const vk::Queue& queue, vk::Swapchain& swapchain, Nova::TransferNode& transferNode, Nova::Camera& camera) : FrameNode(queue, vk::PipelineStageFlags::VertexInput, vk::PipelineStageFlags::ColorAttachmentOutput) {
         m_transferNode = &transferNode;
         m_camera = &camera;
 
+        m_allocator = std::make_unique<Nova::BufferAllocator>(engine, PAGE_SIZE);
         m_bufferUsage = &FrameNode::addBufferUsage(vk::AccessFlags::VertexAttributeRead);
 
         createSemaphores();
@@ -66,10 +68,10 @@ public:
 
 private:
     vk::Swapchain* m_swapchain;
-    Nova::BufferAllocator* m_allocator;
     Nova::TransferNode* m_transferNode;
     Nova::BufferUsage* m_bufferUsage;
     Nova::Camera* m_camera;
+    std::unique_ptr<Nova::BufferAllocator> m_allocator;
     std::unique_ptr<vk::Semaphore> m_acquireSemaphore;
     std::unique_ptr<vk::Semaphore> m_renderSemaphore;
     uint32_t m_index;
@@ -296,8 +298,6 @@ int main() {
 
         Nova::Engine engine = Nova::Engine(renderer);
 
-        Nova::BufferAllocator allocator = Nova::BufferAllocator(engine, 256 * 1024 * 1024);
-
         Nova::Window window = Nova::Window(engine, 800, 600);
         Nova::FrameGraph& graph = engine.frameGraph();
 
@@ -311,7 +311,7 @@ int main() {
         engine.addSystem(cameraManager);
         engine.addSystem(freeCam);
 
-        auto node = TestNode(renderer.graphicsQueue(), window.swapchain(), allocator, transferNode, camera);
+        auto node = TestNode(engine, renderer.graphicsQueue(), window.swapchain(), transferNode, camera);
 
         graph.addNode(transferNode);
         graph.addNode(node);
