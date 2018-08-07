@@ -42,7 +42,7 @@ void FreeListAllocator::free(Allocation allocation) {
         return;
     }
 
-    for (auto it = m_nodes.begin(); it != m_nodes.end(); it++) {
+    for (; it != m_nodes.end(); it++) {
         if (it->offset < allocation.offset) {
             merge(it, allocation);
             return;
@@ -85,7 +85,8 @@ void FreeListAllocator::merge(std::list<Node>::iterator it, Allocation allocatio
         auto next = ++it;
         merge(it, next);
     } else {
-        auto back = ++it;
+        auto back = it;
+        back++;
         auto mid = m_nodes.insert(back, { allocation.offset, allocation.size });
         auto front = it;
         merge(mid, back);
