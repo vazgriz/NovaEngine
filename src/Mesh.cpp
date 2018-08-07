@@ -3,12 +3,12 @@
 
 using namespace Nova;
 
-VertexData::VertexData(BufferAllocator& allocator) {
+VertexData::VertexData(BufferAllocator& allocator, vk::Format format) {
     m_allocator = &allocator;
+    m_format = format;
 }
 
-void VertexData::fill(TransferNode& transferNode, vk::Format format, const void* data, size_t vertexCount) {
-    m_format = format;
+void VertexData::fill(TransferNode& transferNode, const void* data, size_t vertexCount) {
     m_vertexCount = vertexCount;
     createBuffer();
 

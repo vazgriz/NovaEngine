@@ -8,7 +8,7 @@ namespace Nova {
 
     class VertexData {
     public:
-        VertexData(BufferAllocator& allocator);
+        VertexData(BufferAllocator& allocator, vk::Format format);
         VertexData(const VertexData& other) = delete;
         VertexData& operator = (const VertexData& other) = delete;
         VertexData(VertexData&& other) = default;
@@ -19,12 +19,12 @@ namespace Nova {
         size_t size() const { return m_size; }
         Buffer& buffer() const { return *m_buffer; }
 
-        void fill(TransferNode& transferNode, vk::Format format, const void* data, size_t vertexCount);
+        void fill(TransferNode& transferNode, const void* data, size_t vertexCount);
 
     private:
         BufferAllocator* m_allocator;
         vk::Format m_format;
-        size_t m_vertexCount;
+        size_t m_vertexCount = 0;
         size_t m_size;
         std::unique_ptr<Buffer> m_buffer;
 

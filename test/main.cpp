@@ -199,11 +199,11 @@ private:
     }
 
     void createMesh() {
-        auto positionData = std::make_shared<Nova::VertexData>(*m_allocator);
-        positionData->fill(*m_transferNode, vk::Format::R32G32B32_Sfloat, vertexPositions.data(), 3);
+        auto positionData = std::make_shared<Nova::VertexData>(*m_allocator, vk::Format::R32G32B32_Sfloat);
+        positionData->fill(*m_transferNode, vertexPositions.data(), 3);
 
-        auto colorData = std::make_shared<Nova::VertexData>(*m_allocator);
-        colorData->fill(*m_transferNode, vk::Format::R32G32B32_Sfloat, vertexColors.data(), 3);
+        auto colorData = std::make_shared<Nova::VertexData>(*m_allocator, vk::Format::R32G32B32_Sfloat);
+        colorData->fill(*m_transferNode, vertexColors.data(), 3);
 
         m_mesh = std::make_unique<Nova::Mesh>();
         m_mesh->addVertexData(positionData);
