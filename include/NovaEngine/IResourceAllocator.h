@@ -13,6 +13,7 @@ namespace Nova {
         IResourceAllocatorBase& operator = (IResourceAllocatorBase&& other) = default;
         virtual ~IResourceAllocatorBase();
 
+        Engine& engine() const { return *m_engine; }
         virtual void update(size_t completed) = 0;
 
     protected:
