@@ -10,3 +10,4 @@
 #include <NovaEngine/FreeCam.h>
 #include <NovaEngine/Texture.h>
 #include <NovaEngine/Mesh.h>
+#include <NovaEngine/SlotMap.h>

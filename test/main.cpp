@@ -318,7 +318,7 @@ int main() {
         graph.addEdge(transferNode, node);
         graph.bake();
 
-        auto slot1 = window.onSwapchainChanged().connect([&](vk::Swapchain& swapchain) {
+        auto slot = window.onSwapchainChanged().connect([&](vk::Swapchain& swapchain) {
             node.setSwapchain(swapchain);
             camera.setSize({ swapchain.extent().width, swapchain.extent().height });
         });
