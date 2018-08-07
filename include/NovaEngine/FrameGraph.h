@@ -135,6 +135,7 @@ namespace Nova {
         virtual ~FrameNode() { }
 
         const vk::Queue& queue() const { return *m_queue; }
+        FrameGraph& graph() { return *m_graph; }
         void addExternalWait(vk::Semaphore& semaphore, vk::PipelineStageFlags stageMask);
         void addExternalSignal(vk::Semaphore& semaphore);
 

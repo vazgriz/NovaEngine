@@ -240,6 +240,7 @@ FrameGraph::FrameGraph(Engine& engine) {
 
 void FrameGraph::addNode(FrameNode& node) {
     m_nodes.push_back(&node);
+    node.m_graph = this;
 }
 
 void FrameGraph::addEdge(FrameNode& source, FrameNode& dest) {
