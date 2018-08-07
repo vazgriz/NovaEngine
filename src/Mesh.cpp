@@ -20,16 +20,20 @@ void VertexData::fill(TransferNode& transferNode, vk::Format format, const void*
 void VertexData::createBuffer() {
     m_size = m_vertexCount * vk::getFormatSize(m_format);
 
-    if (m_buffer != nullptr) {
-        size_t existingSize = m_buffer->size();
-        if (m_size <= existingSize && m_size >= (existingSize / 2)) {
-            return;
-        }
-    }
-
     vk::BufferCreateInfo info = {};
     info.size = m_size;
     info.usage = vk::BufferUsageFlags::VertexBuffer | vk::BufferUsageFlags::TransferDst;
+
+    if (m_buffer != nullptr) {
+        size_t existingSize = m_buffer->size();
+
+        vk::Buffer temp = vk::Buffer(m_allocator->engine().renderer().device(), info);
+        size_t tempSize = temp.requirements().size;
+
+        if (tempSize <= existingSize && tempSize >= (existingSize / 2)) {
+            return;
+        }
+    }
 
     m_buffer = std::make_unique<Buffer>(m_allocator->allocate(info, vk::MemoryPropertyFlags::DeviceLocal, {}));
 }
