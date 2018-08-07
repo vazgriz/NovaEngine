@@ -67,8 +67,12 @@ namespace Nova {
 
         void addVertexData(std::shared_ptr<VertexData> data, size_t offset = 0);
         void setVertexOffset(size_t index, size_t offset);
+        VertexData& getVertexData(size_t index) { return *m_vertexData[index]; }
+
         void setIndexData(std::shared_ptr<IndexData> data, size_t offset = 0);
         void setIndexOffset(size_t offset);
+        IndexData* getIndexData() { return m_indexData.get(); }
+
         void bind(vk::CommandBuffer& commandBuffer);
         void registerUsage(size_t frame);
 
