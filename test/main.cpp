@@ -324,7 +324,9 @@ int main() {
         });
 
         window.setVisible(true);
-        engine.run();
+        while (!window.shouldClose()) {
+            engine.step();
+        }
         engine.wait();
     }
 

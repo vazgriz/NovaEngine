@@ -22,7 +22,7 @@ namespace Nova {
         FrameGraph& frameGraph() { return *m_frameGraph; }
 
         void addSystem(ISystem& system);
-        void run();
+        void step();
         void wait();
 
     private:

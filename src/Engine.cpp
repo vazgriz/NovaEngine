@@ -23,22 +23,20 @@ void Engine::addSystem(ISystem& system) {
     m_systems.push_back(&system);
 }
 
-void Engine::run() {
-    while (!m_window->shouldClose()) {
-        clock.update();
+void Engine::step() {
+    clock.update();
 
-        glfwPollEvents();
-        m_window->update();
+    glfwPollEvents();
+    m_window->update();
 
-        if (!m_window->canRender()) {
-            glfwWaitEvents();
-        } else {
-            for (auto system : m_systems) {
-                system->update(clock.deltaTime());
-            }
-            m_frameGraph->submit();
-            m_memory->update(m_frameGraph->completedFrames());
+    if (!m_window->canRender()) {
+        glfwWaitEvents();
+    } else {
+        for (auto system : m_systems) {
+            system->update(static_cast<float>(clock.deltaTime()));
         }
+        m_frameGraph->submit();
+        m_memory->update(m_frameGraph->completedFrames());
     }
 }
 
