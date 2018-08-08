@@ -3,17 +3,16 @@
 
 using namespace Nova;
 
-Window::Window(Engine& engine, int32_t width, int32_t height, const std::string& title) : m_window(nullptr, nullptr) {
+Window::Window(Engine& engine, glm::ivec2 size, const std::string& title) : m_window(nullptr, nullptr) {
     m_engine = &engine;
     m_renderer = &m_engine->renderer();
-    m_width = width;
-    m_height = height;
+    m_size = size;
     m_physicalDevice = &m_renderer->device().physicalDevice();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_VISIBLE, 0);
     m_window = std::unique_ptr<GLFWwindow, void(*)(GLFWwindow*)>(
-        glfwCreateWindow(width, height, title.size() > 0 ? title.c_str() : nullptr, nullptr, nullptr),
+        glfwCreateWindow(m_size.x, m_size.y, title.size() > 0 ? title.c_str() : nullptr, nullptr, nullptr),
         glfwDestroyWindow
     );
 
@@ -25,10 +24,10 @@ Window::Window(Engine& engine, int32_t width, int32_t height, const std::string&
     glfwSetCursorPosCallback(m_window.get(), &Window::onMouseMove);
 
     m_swapchainSignal = std::make_unique<Signal<vk::Swapchain&>>();
-    m_resizeSignal = std::make_unique<Signal<int32_t, int32_t>>();
+    m_resizeSignal = std::make_unique<Signal<glm::ivec2>>();
     m_iconifySignal = std::make_unique<Signal<bool>>();
 
-    m_zeroSized = (width == 0 || height == 0);
+    m_zeroSized = (m_size.x == 0 || m_size.y == 0);
 
     createSurface();
     recreateSwapchain();
@@ -73,31 +72,26 @@ void Window::update() {
     if (m_resized) {
         m_resized = false;
 
-        int width;
-        int height;
-        glfwGetFramebufferSize(m_window.get(), &width, &height);
+        glm::ivec2 newSize;
+        glfwGetFramebufferSize(m_window.get(), &newSize.x, &newSize.y);
 
-        int32_t newWidth = static_cast<int32_t>(width);
-        int32_t newHeight = static_cast<int32_t>(height);
-
-        if (newWidth == m_width && newHeight == m_height) {
+        if (newSize == m_size) {
             return;
         }
 
-        if (newWidth == 0 || newHeight == 0) {
+        if (newSize.x == 0 || newSize.y == 0) {
             m_zeroSized = true;
             return;
         } else {
             m_zeroSized = false;
         }
 
-        m_width = newWidth;
-        m_height = newHeight;
+        m_size = newSize;
 
         recreateSwapchain();
 
         m_swapchainSignal->emit(*m_swapchain);
-        m_resizeSignal->emit(m_width, m_height);
+        m_resizeSignal->emit(m_size);
     }
 
     m_input->update();
@@ -142,7 +136,7 @@ vk::Extent2D Window::chooseExtent(const vk::SurfaceCapabilities& capabilities) {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
     } else {
-        VkExtent2D actualExtent = { static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height) };
+        VkExtent2D actualExtent = { static_cast<uint32_t>(m_size.x), static_cast<uint32_t>(m_size.y) };
 
         actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
         actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));

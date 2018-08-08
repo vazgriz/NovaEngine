@@ -13,7 +13,7 @@ namespace Nova {
 
     class Window {
     public:
-        Window(Engine& engine, int32_t width, int32_t height, const std::string& title = "NovaEngine");
+        Window(Engine& engine, glm::ivec2 size, const std::string& title = "NovaEngine");
         Window(const Window& other) = delete;
         Window& operator = (const Window& other) = delete;
         Window(Window&& other) = default;
@@ -24,14 +24,13 @@ namespace Nova {
 
         vk::Swapchain& swapchain() const { return *m_swapchain; }
         const std::vector<vk::ImageView>& imageViews() const { return m_imageViews; }
-        int32_t width() const { return m_width; }
-        int32_t height() const { return m_height; }
+        glm::ivec2 size() const { return m_size; }
 
         Input& input() const { return *m_input; }
 
         void update();
         Signal<vk::Swapchain&>& onSwapchainChanged() { return *m_swapchainSignal; }
-        Signal<int32_t, int32_t>& onResize() { return *m_resizeSignal; }
+        Signal<glm::ivec2>& onResize() { return *m_resizeSignal; }
         Signal<bool>& onIconify() { return *m_iconifySignal; }
 
         bool shouldClose() const { return glfwWindowShouldClose(m_window.get()); }
@@ -50,8 +49,7 @@ namespace Nova {
         Renderer* m_renderer;
         const vk::PhysicalDevice* m_physicalDevice;
         std::unique_ptr<GLFWwindow, void(*)(GLFWwindow*)> m_window;
-        int32_t m_width;
-        int32_t m_height;
+        glm::ivec2 m_size;
         bool m_zeroSized = false;
         bool m_iconified = false;
         std::unique_ptr<vk::Surface> m_surface;
@@ -71,7 +69,7 @@ namespace Nova {
 
         bool m_resized = false;
         std::unique_ptr<Signal<vk::Swapchain&>> m_swapchainSignal;
-        std::unique_ptr<Signal<int32_t, int32_t>> m_resizeSignal;
+        std::unique_ptr<Signal<glm::ivec2>> m_resizeSignal;
         std::unique_ptr<Signal<bool>> m_iconifySignal;
 
         static void onResize(GLFWwindow* window, int width, int height);

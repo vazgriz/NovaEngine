@@ -298,13 +298,13 @@ int main() {
 
         Nova::Engine engine = Nova::Engine(renderer);
 
-        Nova::Window window = Nova::Window(engine, 800, 600);
+        Nova::Window window = Nova::Window(engine, { 800, 600 });
         Nova::FrameGraph& graph = engine.frameGraph();
 
         auto transferNode = Nova::TransferNode(engine, renderer.transferQueue(), graph, 64 * 1024 * 1024);
 
         Nova::CameraManager cameraManager = Nova::CameraManager(engine, transferNode);
-        Nova::PerspectiveCamera camera = Nova::PerspectiveCamera(cameraManager, { window.width(), window.height() }, 90.0f, 0.1f, 10.0f);
+        Nova::PerspectiveCamera camera = Nova::PerspectiveCamera(cameraManager, window.size(), 90.0f, 0.1f, 10.0f);
         camera.setPosition({ 0, 0, 1 });
         camera.setRotation({ 1, 0, 0, 0 });
         Nova::FreeCam freeCam = Nova::FreeCam(window, camera, 0.25f);
