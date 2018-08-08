@@ -38,6 +38,8 @@ namespace Nova {
         bool iconified() const { return m_iconified; }
         void setVisible(bool visible);
         bool visible() const;
+        void setTitle(const std::string& title);
+        std::string title() const { return m_title; }
         bool canRender() const;
 
         void setMouseLocked(bool locked);
@@ -56,6 +58,7 @@ namespace Nova {
         std::unique_ptr<vk::Swapchain> m_swapchain;
         std::vector<vk::ImageView> m_imageViews;
         std::unique_ptr<Input> m_input;
+        std::string m_title;
 
         void createSurface();
         void recreateSwapchain();

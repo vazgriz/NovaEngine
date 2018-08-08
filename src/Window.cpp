@@ -222,6 +222,11 @@ bool Window::visible() const {
     return visible == 1;
 }
 
+void Window::setTitle(const std::string& title) {
+    m_title = title;
+    glfwSetWindowTitle(m_window.get(), m_title.c_str());
+}
+
 void Window::setMouseLocked(bool locked) {
     if (locked) {
         glfwSetInputMode(m_window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
