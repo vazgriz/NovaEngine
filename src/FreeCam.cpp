@@ -14,7 +14,7 @@ FreeCam::FreeCam(Window& window, Camera& camera, float sensitivity) {
     m_sensitivity = sensitivity;
 
     m_look = {};
-    m_position = { 0, 0, 1 };
+    m_position = m_camera->position();
 }
 
 void FreeCam::update(float delta) {

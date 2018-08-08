@@ -29,6 +29,8 @@ namespace Nova {
         Buffer& buffer() const { return *m_buffer; }
 
         glm::ivec2 size() const { return m_size; }
+        glm::vec3 position() const { return m_pos; }
+        glm::quat rotation() const { return m_rot; }
         void setSize(glm::ivec2 size);
         void setPosition(glm::vec3 pos);
         void setRotation(glm::quat rot);
