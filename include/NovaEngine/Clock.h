@@ -5,9 +5,9 @@ namespace Nova {
     class Clock {
     public:
         void update();
-        double actualTime();
-        double frameTime() { return m_last; }
-        double deltaTime() { return m_elapsed; }
+        double actualTime() const;
+        double frameTime() const { return m_last; }
+        double deltaTime() const { return m_elapsed; }
 
     private:
         double m_last = 0;

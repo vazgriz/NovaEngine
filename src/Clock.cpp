@@ -8,6 +8,6 @@ void Clock::update() {
     m_last = now;
 }
 
-double Clock::actualTime() {
+double Clock::actualTime() const {
     return glfwGetTime();
 }

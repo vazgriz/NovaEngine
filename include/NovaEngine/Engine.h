@@ -20,6 +20,7 @@ namespace Nova {
         Memory& memory() { return *m_memory; }
         Window& window() { return *m_window; }
         FrameGraph& frameGraph() { return *m_frameGraph; }
+        const Clock& clock() const { return m_clock; }
 
         void addSystem(ISystem& system);
         void step();
@@ -32,7 +33,7 @@ namespace Nova {
         std::unique_ptr<Memory> m_memory;
         std::unique_ptr<FrameGraph> m_frameGraph;
         std::vector<ISystem*> m_systems;
-        Clock clock;
+        Clock m_clock;
 
         void addWindow(Window& window);
     };
