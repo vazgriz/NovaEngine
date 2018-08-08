@@ -5,6 +5,7 @@
 #include "NovaEngine/Memory.h"
 #include "NovaEngine/FrameGraph.h"
 #include "NovaEngine/ISystem.h"
+#include "NovaEngine/Clock.h"
 
 namespace Nova {
     class Engine {
@@ -31,7 +32,7 @@ namespace Nova {
         std::unique_ptr<Memory> m_memory;
         std::unique_ptr<FrameGraph> m_frameGraph;
         std::vector<ISystem*> m_systems;
-        float m_lastTime;
+        Clock clock;
 
         void addWindow(Window& window);
     };

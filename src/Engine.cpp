@@ -8,7 +8,6 @@ Engine::Engine(Renderer& renderer) {
     m_renderer = &renderer;
     m_memory = std::make_unique<Memory>(*this);
     m_frameGraph = std::make_unique<FrameGraph>(*this);
-    m_lastTime = static_cast<float>(glfwGetTime());
     m_frameGraph->setFrameCount(VIRTUAL_FRAMES);
 }
 
@@ -26,9 +25,7 @@ void Engine::addSystem(ISystem& system) {
 
 void Engine::run() {
     while (!m_window->shouldClose()) {
-        float now = static_cast<float>(glfwGetTime());
-        float delta = now - m_lastTime;
-        m_lastTime = now;
+        clock.update();
 
         glfwPollEvents();
         m_window->update();
@@ -37,7 +34,7 @@ void Engine::run() {
             glfwWaitEvents();
         } else {
             for (auto system : m_systems) {
-                system->update(delta);
+                system->update(clock.deltaTime());
             }
             m_frameGraph->submit();
             m_memory->update(m_frameGraph->completedFrames());

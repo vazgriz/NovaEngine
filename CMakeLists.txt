@@ -33,6 +33,7 @@ add_library(NovaEngine
     "src/FrameGraph.cpp"
     "src/Texture.cpp"
     "src/Mesh.cpp"
+    "src/Clock.cpp"
 )
 target_include_directories(NovaEngine
     PUBLIC "${PROJECT_SOURCE_DIR}/include"
