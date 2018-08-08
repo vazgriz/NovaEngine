@@ -1,9 +1,12 @@
 #pragma once
-#include "NovaEngine/Window.h"
-#include "NovaEngine/Camera.h"
+#include <glm/glm.hpp>
 #include "NovaEngine/ISystem.h"
 
 namespace Nova {
+    class Window;
+    class Input;
+    class Camera;
+
     class FreeCam : public ISystem {
     public:
         FreeCam(Window& window, Camera& camera, float sensitivity);

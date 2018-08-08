@@ -1,4 +1,5 @@
 #include "NovaEngine/RawAllocator.h"
+#include "NovaEngine/Engine.h"
 
 using namespace Nova;
 

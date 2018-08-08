@@ -1,4 +1,5 @@
 #include "NovaEngine/StagingAllocator.h"
+#include "NovaEngine/Engine.h"
 
 using namespace Nova;
 

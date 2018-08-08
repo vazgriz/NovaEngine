@@ -1,5 +1,6 @@
 #include "NovaEngine/Mesh.h"
 #include "NovaEngine/TransferNode.h"
+#include "NovaEngine/Engine.h"
 
 using namespace Nova;
 

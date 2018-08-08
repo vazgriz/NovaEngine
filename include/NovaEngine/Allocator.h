@@ -1,10 +1,11 @@
 #pragma once
 #include <VulkanWrapper/VulkanWrapper.h>
-#include "NovaEngine/Engine.h"
 #include "NovaEngine/RawAllocator.h"
 #include "NovaEngine/IResourceAllocator.h"
 
 namespace Nova {
+    class Engine;
+
     template<typename T, typename TCreateInfo>
     class Allocator : public IResourceAllocator<T, TCreateInfo>, public IResourceAllocatorBase {
         struct ResourceUsage {

@@ -1,11 +1,12 @@
 #pragma once
 #include <VulkanWrapper/VulkanWrapper.h>
-#include "NovaEngine/Engine.h"
 #include "NovaEngine/Memory.h"
 #include "NovaEngine/Signal.h"
 #include "NovaEngine/LinearAllocator.h"
 
 namespace Nova {
+    class Engine;
+
     class StagingAllocator {
     public:
         StagingAllocator(Engine& engine, size_t pageSize, uint32_t type);

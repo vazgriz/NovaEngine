@@ -2,12 +2,13 @@
 #include <VulkanWrapper/VulkanWrapper.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include "NovaEngine/Engine.h"
 #include "NovaEngine/Allocator.h"
 #include "NovaEngine/TransferNode.h"
 #include "NovaEngine/CameraManager.h"
 
 namespace Nova {
+    class Engine;
+
     class Camera {
         struct CameraInfo {
             glm::mat4 view;

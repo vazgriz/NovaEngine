@@ -1,4 +1,5 @@
 #include "NovaEngine/Texture.h"
+#include "NovaEngine/Engine.h"
 
 using namespace Nova;
 

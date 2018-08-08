@@ -1,6 +1,5 @@
 #include "NovaEngine/Window.h"
 #include "NovaEngine/Engine.h"
-#include "NovaEngine/Input.h"
 
 using namespace Nova;
 

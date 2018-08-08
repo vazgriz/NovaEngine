@@ -1,11 +1,12 @@
 #pragma once
-#include "NovaEngine/Memory.h"
-#include "NovaEngine/Engine.h"
 #include "NovaEngine/IRawAllocator.h"
 #include "NovaEngine/FreeListAllocator.h"
 #include <unordered_set>
 
 namespace Nova {
+    class Engine;
+    class Memory;
+
     template<typename T, typename TCreateInfo>
     class RawAllocator : public IRawAllocator<T, TCreateInfo> {
         class Page {

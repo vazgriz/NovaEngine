@@ -1,6 +1,9 @@
 #include "NovaEngine/FreeCam.h"
 #include <algorithm>
 #include <cmath>
+#include "NovaEngine/Window.h"
+#include "NovaEngine/Input.h"
+#include "NovaEngine/Camera.h"
 
 using namespace Nova;
 

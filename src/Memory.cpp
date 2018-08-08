@@ -1,6 +1,7 @@
 #include "NovaEngine/Memory.h"
 #include "NovaEngine/Engine.h"
 #include "NovaEngine/IResourceAllocator.h"
+#include "NovaEngine/FreeListAllocator.h"
 
 #define PAGE_SIZE (256 * 1024 * 1024)
 

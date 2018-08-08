@@ -2,6 +2,7 @@
 #include <unordered_set>
 #include "NovaEngine/TransferNode.h"
 #include "NovaEngine/Allocator.h"
+#include "NovaEngine/ISystem.h"
 
 namespace Nova {
     class Camera;
