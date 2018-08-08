@@ -72,19 +72,20 @@ namespace Nova {
     class SlotMap {
         friend class SlotHandle<T>;
 
-        struct Item {
-            T item;
-            uint32_t version;
-            bool live;
+        static constexpr size_t chunkSize = std::max<size_t>(4096 / sizeof(T), 1);
 
-            void destroy() {
-                item.~T();
-                version++;
-                live = false;
+        struct Chunk {
+            std::unique_ptr<char[]> data;
+            uint32_t version[chunkSize];
+            bool live[chunkSize];
+
+            void destroy(size_t index) {
+                T* ptr = reinterpret_cast<T*>(data.get());
+                ptr[index].~T();
+                version[index]++;
+                live[index] = false;
             }
         };
-
-        static constexpr size_t chunkSize = std::max<size_t>(4096 / sizeof(T), 1);
 
     public:
         SlotMap() {}
@@ -94,14 +95,13 @@ namespace Nova {
         SlotMap& operator = (SlotMap&& other) = default;
 
         ~SlotMap() {
-            for (void* ptr : m_items) {
-                Item* items = static_cast<Item*>(ptr);
+            for (Chunk& chunk : m_chunks) {
+                T* items = reinterpret_cast<T*>(chunk.data.get());
                 for (size_t i = 0; i < chunkSize; i++) {
-                    if (items[i].live) {
-                        items[i].item.~T();
+                    if (chunk.live[i]) {
+                        items[i].~T();
                     }
                 }
-                free(ptr);
             }
         }
 
@@ -110,58 +110,60 @@ namespace Nova {
             uint32_t virtualIndex;
 
             if (m_free.empty()) {
-                Item* newItem = static_cast<Item*>(calloc(chunkSize, sizeof(Item)));
-                uint32_t startIndex = static_cast<uint32_t>(m_items.size() * chunkSize);
+                m_chunks.emplace_back(Chunk{ std::make_unique<char[]>(chunkSize * sizeof(T)) });
 
+                uint32_t startIndex = static_cast<uint32_t>((m_chunks.size() - 1) * chunkSize);
                 for (uint32_t i = 0; i < chunkSize; i++) {
                     m_free.push(startIndex + (chunkSize - i - 1));
                 }
-
-                m_items.push_back(newItem);
             }
 
             virtualIndex = m_free.top();
             m_free.pop();
 
-            uint32_t itemIndex = virtualIndex / chunkSize;
-            uint32_t chunkIndex = virtualIndex % chunkSize;
+            uint32_t chunkIndex = virtualIndex / chunkSize;
+            uint32_t itemIndex = virtualIndex % chunkSize;
 
-            Item& item = static_cast<Item*>(m_items[itemIndex])[chunkIndex];
-            item.live = true;
-            new (&item.item) T(std::forward<Args...>(args...));
+            Chunk& chunk = m_chunks[chunkIndex];
+            chunk.live[itemIndex] = true;
+            T item = reinterpret_cast<T*>(chunk.data.get())[itemIndex];
+            new (&item) T(std::forward<Args...>(args...));
 
-            return SlotHandle<T>(this, { static_cast<uint32_t>(virtualIndex), item.version });
+            return SlotHandle<T>(this, { static_cast<uint32_t>(virtualIndex), chunk.version[itemIndex] });
         }
 
         T& get(SlotID slot) {
             uint32_t virtualIndex = slot.index;
             uint32_t version = slot.version;
 
-            uint32_t itemIndex = virtualIndex / chunkSize;
-            uint32_t chunkIndex = virtualIndex % chunkSize;
+            uint32_t chunkIndex = virtualIndex / chunkSize;
+            uint32_t itemIndex = virtualIndex % chunkSize;
 
-            Item& item = static_cast<Item*>(m_items[itemIndex])[chunkIndex];
-            if (item.version == version) {
-                return item.item;
+            Chunk& chunk = m_chunks[chunkIndex];
+            T& item = reinterpret_cast<T*>(chunk.data.get())[itemIndex];
+            if (chunk.version[itemIndex] == version) {
+                return item;
             } else {
                 throw std::runtime_error("SlotID is not valid");
             }
         }
 
     private:
-        std::vector<void*> m_items;
+        std::vector<Chunk> m_chunks;
         std::stack<uint32_t> m_free;
 
         void destroy(SlotID slot) {
             uint32_t virtualIndex = slot.index;
             uint32_t version = slot.version;
 
-            uint32_t itemIndex = virtualIndex / chunkSize;
-            uint32_t chunkIndex = virtualIndex % chunkSize;
+            uint32_t chunkIndex = virtualIndex / chunkSize;
+            uint32_t itemIndex = virtualIndex % chunkSize;
 
-            Item& item = static_cast<Item*>(m_items[itemIndex])[chunkIndex];
-            if (item.version == version) {
-                item.destroy();
+            Chunk& chunk = m_chunks[chunkIndex];
+            T& item = reinterpret_cast<T*>(chunk.data.get())[itemIndex];
+            if (chunk.version[itemIndex] == version) {
+                chunk.destroy(itemIndex);
+                m_free.push(itemIndex);
             } else {
                 throw std::runtime_error("SlotID is not valid");
             }
