@@ -41,7 +41,7 @@ namespace Nova {
         }
 
         ~SlotHandle() {
-            if (m_slotMap != mullptr) {
+            if (m_slotMap != nullptr) {
                 m_slotMap->destroy(m_slotID);
             }
         }
@@ -62,7 +62,7 @@ namespace Nova {
         T* m_item;
 
         SlotHandle(SlotMap<T>* slotMap, SlotID slotID) {
-            m_slotMap = m_slotMap;
+            m_slotMap = slotMap;
             m_slotID = slotID;
             m_item = &m_slotMap->get(m_slotID);
         }
