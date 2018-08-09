@@ -244,8 +244,8 @@ void FrameGraph::addNode(FrameNode& node) {
 }
 
 void FrameGraph::addEdge(FrameNode& source, FrameNode& dest) {
-    m_events.emplace_back(std::make_unique<FrameGraph::Edge>(source, dest));
-    auto& event = *m_events.back();
+    m_edges.emplace_back(std::make_unique<FrameGraph::Edge>(source, dest));
+    auto& event = *m_edges.back();
     source.m_outEvents.push_back(&event);
     dest.m_inEvents.push_back(&event);
 }
@@ -396,7 +396,7 @@ void FrameGraph::submit() {
         node->preSubmit(m_frame);
     }
 
-    for (auto& event : m_events) {
+    for (auto& event : m_edges) {
         event->buildBarriers();
     }
 

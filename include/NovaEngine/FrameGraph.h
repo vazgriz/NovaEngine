@@ -70,7 +70,7 @@ namespace Nova {
         size_t m_frame = 1;
         std::vector<std::unique_ptr<Group>> m_groups;
         std::vector<std::unique_ptr<vk::Semaphore>> m_semaphores;
-        std::vector<std::unique_ptr<Edge>> m_events;
+        std::vector<std::unique_ptr<Edge>> m_edges;
         std::vector<std::vector<vk::Fence>> m_fences;
         std::unique_ptr<Signal<size_t>> m_onFrameCountChanged;
 
