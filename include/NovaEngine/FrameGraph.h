@@ -24,6 +24,7 @@ namespace Nova {
             vk::PipelineStageFlags sourceStages;
             vk::PipelineStageFlags destStages;
             vk::SubmitInfo info;
+            std::unique_ptr<vk::Semaphore> selfSync;
 
             void addNode(FrameNode* node);
             void submit(size_t frame, size_t index, vk::Fence& fence);
@@ -77,6 +78,7 @@ namespace Nova {
         void internalSetFrames(size_t frames);
         void createGroups();
         void createSemaphores();
+        void preSignal();
     };
 
     class BufferUsage {

@@ -104,6 +104,7 @@ FrameGraph::Group::Group(const vk::Queue& queue) {
     this->info = {};
     sourceStages = {};
     destStages = {};
+    selfSync = std::make_unique<vk::Semaphore>(this->queue->device(), vk::SemaphoreCreateInfo{});
 }
 
 void FrameGraph::Group::addNode(FrameNode* node) {
@@ -301,6 +302,7 @@ void FrameGraph::bake() {
     createGroups();
     internalSetFrames(m_frameCount);
     createSemaphores();
+    preSignal();
 }
 
 void FrameGraph::createGroups() {
@@ -357,6 +359,10 @@ void FrameGraph::createGroups() {
 
 void FrameGraph::createSemaphores() {
     for (auto& group : m_groups) {
+        group->info.waitSemaphores.push_back(*group->selfSync);
+        group->info.waitDstStageMask.push_back(group->destStages);
+        group->info.signalSemaphores.push_back(*group->selfSync);
+
         std::unordered_set<Group*> outGroupSet;
 
         for (auto node : group->nodes) {
@@ -382,6 +388,16 @@ void FrameGraph::createSemaphores() {
             }
         }
     }
+}
+
+void FrameGraph::preSignal() {
+    vk::SubmitInfo info = {};
+
+    for (auto& group : m_groups) {
+        info.signalSemaphores.push_back(*group->selfSync);
+    }
+
+    m_engine->renderer().graphicsQueue().submit({ info }, nullptr);
 }
 
 size_t FrameGraph::completedFrames() const {
