@@ -3,7 +3,7 @@
 using namespace Nova;
 
 template<typename T, typename TCreateInfo>
-Allocator<T, TCreateInfo>::Allocator(Engine& engine, size_t pageSize) : IResourceAllocatorBase(engine), m_allocator(engine, pageSize) {
+Allocator<T, TCreateInfo>::Allocator(Engine& engine, size_t pageSize) : IResourceAllocator(engine), m_allocator(engine, pageSize) {
 
 }
 

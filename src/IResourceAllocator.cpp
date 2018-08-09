@@ -49,5 +49,12 @@ void Resource<T, TCreateInfo>::registerUsage(size_t frame) const {
     m_allocator->registerUsage(m_resource, frame);
 }
 
+template<typename T, typename TCreateInfo>
+IResourceAllocator<T, TCreateInfo>::IResourceAllocator(Engine& engine) : IResourceAllocatorBase(engine) {
+
+}
+
 template class Resource<vk::Buffer, vk::BufferCreateInfo>;
 template class Resource<vk::Image, vk::ImageCreateInfo>;
+template class IResourceAllocator<vk::Buffer, vk::BufferCreateInfo>;
+template class IResourceAllocator<vk::Image, vk::ImageCreateInfo>;

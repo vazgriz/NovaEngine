@@ -7,7 +7,7 @@ namespace Nova {
     class Engine;
 
     template<typename T, typename TCreateInfo>
-    class Allocator : public IResourceAllocator<T, TCreateInfo>, public IResourceAllocatorBase {
+    class Allocator : public IResourceAllocator<T, TCreateInfo> {
         struct ResourceUsage {
             std::unique_ptr<RawResource<T>> resource;
             size_t usage = 0;

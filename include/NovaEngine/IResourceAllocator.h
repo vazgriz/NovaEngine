@@ -48,8 +48,9 @@ namespace Nova {
 
 
     template<typename T, typename TCreateInfo>
-    class IResourceAllocator {
+    class IResourceAllocator : public IResourceAllocatorBase {
     public:
+        IResourceAllocator(Engine& engine);
         virtual Resource<T, TCreateInfo> allocate(const TCreateInfo& info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) = 0;
         virtual void registerUsage(RawResource<T>* resource, size_t frame) = 0;
         virtual void free(RawResource<T>* resource) = 0;
