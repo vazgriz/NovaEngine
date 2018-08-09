@@ -5,6 +5,7 @@ using namespace Nova;
 
 IResourceAllocatorBase::IResourceAllocatorBase(Engine& engine) {
     m_engine = &engine;
+    m_engine->memory().addResourceAllocator(*this);
 }
 
 IResourceAllocatorBase::~IResourceAllocatorBase() {
