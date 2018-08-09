@@ -71,7 +71,7 @@ namespace Nova {
 
         void setIndexData(std::shared_ptr<IndexData> data, size_t offset = 0);
         void setIndexOffset(size_t offset);
-        IndexData* getIndexData() { return m_indexData.get(); }
+        IndexData& getIndexData() { return *m_indexData; }
 
         void bind(vk::CommandBuffer& commandBuffer);
         void registerUsage(size_t frame);
