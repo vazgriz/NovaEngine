@@ -8,8 +8,8 @@ TransferNode::TransferNode(Engine& engine, const vk::Queue& queue, FrameGraph& f
     m_frameGraph = &frameGraph;
     m_pageSize = pageSize;
 
-    m_bufferUsage = &FrameNode::addBufferUsage(vk::AccessFlags::TransferWrite);
-    m_imageUsage = &FrameNode::addImageUsage(vk::AccessFlags::TransferWrite, vk::ImageLayout::TransferDstOptimal);
+    m_bufferUsage = &FrameNode::addBufferUsage(vk::PipelineStageFlags::Transfer, vk::AccessFlags::TransferWrite);
+    m_imageUsage = &FrameNode::addImageUsage(vk::PipelineStageFlags::Transfer, vk::AccessFlags::TransferWrite, vk::ImageLayout::TransferDstOptimal);
 
     findType();
 

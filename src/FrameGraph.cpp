@@ -4,8 +4,9 @@
 
 using namespace Nova;
 
-BufferUsage::BufferUsage(FrameNode* node, vk::AccessFlags accessMask) {
+BufferUsage::BufferUsage(FrameNode* node, vk::PipelineStageFlags stageMask, vk::AccessFlags accessMask) {
     m_node = node;
+    m_stageMask = stageMask;
     m_accessMask = accessMask;
 }
 
@@ -16,8 +17,9 @@ void BufferUsage::add(const Buffer& buffer, size_t offset, size_t size) {
     }
 }
 
-ImageUsage::ImageUsage(FrameNode* node, vk::AccessFlags accessMask, vk::ImageLayout layout) {
+ImageUsage::ImageUsage(FrameNode* node, vk::PipelineStageFlags stageMask, vk::AccessFlags accessMask, vk::ImageLayout layout) {
     m_node = node;
+    m_stageMask = stageMask;
     m_accessMask = accessMask;
     m_layout = layout;
 }
@@ -54,13 +56,13 @@ void FrameNode::createCommandBuffers(size_t frames) {
     m_commandBuffers = m_pool->allocate(info);
 }
 
-BufferUsage& FrameNode::addBufferUsage(vk::AccessFlags accessMask) {
-    m_bufferUsages.emplace_back(std::make_unique<BufferUsage>(this, accessMask));
+BufferUsage& FrameNode::addBufferUsage(vk::PipelineStageFlags stageMask, vk::AccessFlags accessMask) {
+    m_bufferUsages.emplace_back(std::make_unique<BufferUsage>(this, stageMask, accessMask));
     return *m_bufferUsages.back();
 }
 
-ImageUsage& FrameNode::addImageUsage(vk::AccessFlags accessMask, vk::ImageLayout layout) {
-    m_imageUsages.emplace_back(std::make_unique<ImageUsage>(this, accessMask, layout));
+ImageUsage& FrameNode::addImageUsage(vk::PipelineStageFlags stageMask, vk::AccessFlags accessMask, vk::ImageLayout layout) {
+    m_imageUsages.emplace_back(std::make_unique<ImageUsage>(this, stageMask, accessMask, layout));
     return *m_imageUsages.back();
 }
 
@@ -158,7 +160,7 @@ void FrameGraph::Edge::buildBarriers() {
                 sourceBarrier.dstAccessMask = destInstance->second.usage->m_accessMask;
             }
 
-            sourceBufferBarriers.push_back(sourceBarrier);
+            sourceBufferBarriers.push_back({ sourceBarrier, sourceInstance.second.usage->m_stageMask, destInstance->second.usage->m_stageMask });
 
             vk::BufferMemoryBarrier destBarrier = {};
             destBarrier.buffer = destInstance->first;
@@ -173,7 +175,7 @@ void FrameGraph::Edge::buildBarriers() {
 
             destBarrier.dstAccessMask = destInstance->second.usage->m_accessMask;
 
-            destBufferBarriers.push_back(destBarrier);
+            destBufferBarriers.push_back({ destBarrier, sourceInstance.second.usage->m_stageMask, destInstance->second.usage->m_stageMask });
         }
     }
 
@@ -196,7 +198,7 @@ void FrameGraph::Edge::buildBarriers() {
                 sourceBarrier.newLayout = destInstance->second.usage->m_layout;
             }
             
-            sourceImageBarriers.push_back(sourceBarrier);
+            sourceImageBarriers.push_back({ sourceBarrier, sourceInstance.second.usage->m_stageMask, destInstance->second.usage->m_stageMask });
 
             vk::ImageMemoryBarrier destBarrier = {};
             destBarrier.image = destInstance->first;
@@ -212,25 +214,45 @@ void FrameGraph::Edge::buildBarriers() {
 
             destBarrier.dstAccessMask = destInstance->second.usage->m_accessMask;
 
-            destImageBarriers.push_back(destBarrier);
+            destImageBarriers.push_back({ destBarrier, sourceInstance.second.usage->m_stageMask, destInstance->second.usage->m_stageMask });
         }
     }
 }
 
 void FrameGraph::Edge::recordSource(vk::CommandBuffer& commandBuffer) {
     if (event != nullptr) {
-        commandBuffer.pipelineBarrier(source->m_destStages, dest->m_destStages, {}, {}, sourceBufferBarriers, sourceImageBarriers);
+        for (auto& barrier : sourceBufferBarriers) {
+            commandBuffer.pipelineBarrier(barrier.source, barrier.dest, {}, {}, { barrier.barrier }, {});
+        }
+        for (auto& barrier : sourceImageBarriers) {
+            commandBuffer.pipelineBarrier(barrier.source, barrier.dest, {}, {}, {},  { barrier.barrier });
+        }
         commandBuffer.setEvent(*event, source->m_destStages);
     } else {
-        commandBuffer.pipelineBarrier(source->m_destStages, vk::PipelineStageFlags::BottomOfPipe, {}, {}, sourceBufferBarriers, sourceImageBarriers);
+        for (auto& barrier : sourceBufferBarriers) {
+            commandBuffer.pipelineBarrier(barrier.source, vk::PipelineStageFlags::BottomOfPipe, {}, {}, { barrier.barrier }, {});
+        }
+        for (auto& barrier : sourceImageBarriers) {
+            commandBuffer.pipelineBarrier(barrier.source, vk::PipelineStageFlags::BottomOfPipe, {}, {}, {}, { barrier.barrier });
+        }
     }
 }
 
 void FrameGraph::Edge::recordDest(vk::CommandBuffer& commandBuffer) {
     if (event != nullptr) {
-        commandBuffer.waitEvents({ *event }, source->m_destStages, dest->m_sourceStages, {}, destBufferBarriers, destImageBarriers);
+        for (auto& barrier : destBufferBarriers) {
+            commandBuffer.pipelineBarrier(barrier.source, barrier.dest, {}, {}, { barrier.barrier }, {});
+        }
+        for (auto& barrier : destImageBarriers) {
+            commandBuffer.pipelineBarrier(barrier.source, barrier.dest, {}, {}, {}, { barrier.barrier });
+        }
     } else {
-        commandBuffer.pipelineBarrier(vk::PipelineStageFlags::TopOfPipe, dest->m_sourceStages, {}, {}, destBufferBarriers, destImageBarriers);
+        for (auto& barrier : destBufferBarriers) {
+            commandBuffer.pipelineBarrier(vk::PipelineStageFlags::TopOfPipe, barrier.dest, {}, {}, { barrier.barrier }, {});
+        }
+        for (auto& barrier : destImageBarriers) {
+            commandBuffer.pipelineBarrier(vk::PipelineStageFlags::TopOfPipe, barrier.dest, {}, {}, {}, { barrier.barrier });
+        }
     }
 }
 

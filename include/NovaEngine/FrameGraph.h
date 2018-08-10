@@ -30,6 +30,18 @@ namespace Nova {
             void submit(size_t frame, size_t index, vk::Fence& fence);
         };
 
+        struct BufferBarrierInfo {
+            vk::BufferMemoryBarrier barrier;
+            vk::PipelineStageFlags source;
+            vk::PipelineStageFlags dest;
+        };
+
+        struct ImageBarrierInfo {
+            vk::ImageMemoryBarrier barrier;
+            vk::PipelineStageFlags source;
+            vk::PipelineStageFlags dest;
+        };
+
         struct Edge {
             Edge(FrameNode& source, FrameNode& dest);
             void buildBarriers();
@@ -39,10 +51,10 @@ namespace Nova {
             FrameNode* source;
             FrameNode* dest;
             std::unique_ptr<vk::Event> event;
-            std::vector<vk::BufferMemoryBarrier> sourceBufferBarriers;
-            std::vector<vk::ImageMemoryBarrier> sourceImageBarriers;
-            std::vector<vk::BufferMemoryBarrier> destBufferBarriers;
-            std::vector<vk::ImageMemoryBarrier> destImageBarriers;
+            std::vector<BufferBarrierInfo> sourceBufferBarriers;
+            std::vector<ImageBarrierInfo> sourceImageBarriers;
+            std::vector<BufferBarrierInfo> destBufferBarriers;
+            std::vector<ImageBarrierInfo> destImageBarriers;
         };
 
     public:
@@ -93,12 +105,13 @@ namespace Nova {
         };
 
     public:
-        BufferUsage(FrameNode* node, vk::AccessFlags accessMask);
+        BufferUsage(FrameNode* node, vk::PipelineStageFlags stageMask, vk::AccessFlags accessMask);
 
         void add(const Buffer& buffer, size_t offset, size_t size);
 
     private:
         FrameNode* m_node;
+        vk::PipelineStageFlags m_stageMask;
         vk::AccessFlags m_accessMask;
     };
 
@@ -113,12 +126,13 @@ namespace Nova {
         };
 
     public:
-        ImageUsage(FrameNode* node, vk::AccessFlags accessMask, vk::ImageLayout layout);
+        ImageUsage(FrameNode* node, vk::PipelineStageFlags stageMask, vk::AccessFlags accessMask, vk::ImageLayout layout);
 
         void add(const Image& image, vk::ImageSubresourceRange range);
 
     private:
         FrameNode* m_node;
+        vk::PipelineStageFlags m_stageMask;
         vk::AccessFlags m_accessMask;
         vk::ImageLayout m_layout;
     };
@@ -151,8 +165,8 @@ namespace Nova {
     protected:
         vk::CommandPool& commandPool() const { return *m_pool; }
         std::vector<vk::CommandBuffer>& commandBuffers() { return m_commandBuffers; }
-        BufferUsage& addBufferUsage(vk::AccessFlags accessMask);
-        ImageUsage& addImageUsage(vk::AccessFlags accessMask, vk::ImageLayout layout);
+        BufferUsage& addBufferUsage(vk::PipelineStageFlags stageMask, vk::AccessFlags accessMask);
+        ImageUsage& addImageUsage(vk::PipelineStageFlags stageMask, vk::AccessFlags accessMask, vk::ImageLayout layout);
 
     private:
         FrameGraph* m_graph;

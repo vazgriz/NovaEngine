@@ -48,7 +48,7 @@ public:
         m_camera = &camera;
 
         m_allocator = std::make_unique<Nova::BufferAllocator>(engine, PAGE_SIZE);
-        m_bufferUsage = &FrameNode::addBufferUsage(vk::AccessFlags::VertexAttributeRead);
+        m_bufferUsage = &FrameNode::addBufferUsage(vk::PipelineStageFlags::VertexInput, vk::AccessFlags::VertexAttributeRead);
 
         createSemaphores();
         createMesh();
