@@ -37,6 +37,8 @@ FrameNode::FrameNode(const vk::Queue& queue, vk::PipelineStageFlags sourceStages
     m_sourceStages = sourceStages;
     m_destStages = destStages;
 
+    m_selfSync = std::make_unique<vk::Semaphore>(m_queue->device(), vk::SemaphoreCreateInfo{});
+
     createCommandPool();
 }
 
@@ -79,6 +81,17 @@ void FrameNode::clearInstances() {
     m_imageMap.clear();
 }
 
+void FrameNode::submit(size_t frame, size_t index, vk::Fence& fence) {
+    m_submitInfo.commandBuffers.clear();
+    auto commandBuffers = submit(frame, index);
+
+    for (auto commandBuffer : commandBuffers) {
+        m_submitInfo.commandBuffers.push_back(*commandBuffer);
+    }
+
+    m_queue->submit({ m_submitInfo }, &fence);
+}
+
 void FrameNode::addExternalWait(vk::Semaphore& semaphore, vk::PipelineStageFlags stageMask) {
     m_externalWaits.push_back(&semaphore);
     m_externalWaitMasks.push_back(stageMask);
@@ -100,34 +113,6 @@ void FrameNode::postRecord(vk::CommandBuffer& commandBuffer) {
     }
 }
 
-FrameGraph::Group::Group(const vk::Queue& queue) {
-    this->queue = &queue;
-    this->family = queue.familyIndex();
-    this->info = {};
-    sourceStages = {};
-    destStages = {};
-    selfSync = std::make_unique<vk::Semaphore>(this->queue->device(), vk::SemaphoreCreateInfo{});
-}
-
-void FrameGraph::Group::addNode(FrameNode* node) {
-    nodes.push_back(node);
-    sourceStages |= node->m_sourceStages;
-    destStages |= node->m_destStages;
-}
-
-void FrameGraph::Group::submit(size_t frame, size_t index, vk::Fence& fence) {
-    info.commandBuffers.clear();
-
-    for (auto node : nodes) {
-        auto commands = node->submit(frame, index);
-        for (auto command : commands) {
-            info.commandBuffers.push_back(*command);
-        }
-    }
-
-    queue->submit({ info }, &fence);
-}
-
 FrameGraph::Edge::Edge(FrameNode& source, FrameNode& dest) {
     this->source = &source;
     this->dest = &dest;
@@ -136,6 +121,10 @@ FrameGraph::Edge::Edge(FrameNode& source, FrameNode& dest) {
         vk::EventCreateInfo info = {};
 
         event = std::make_unique<vk::Event>(source.m_queue->device(), info);
+    } else {
+        vk::SemaphoreCreateInfo info = {};
+
+        semaphore = std::make_unique<vk::Semaphore>(source.m_queue->device(), info);
     }
 }
 
@@ -291,13 +280,13 @@ void FrameGraph::internalSetFrames(size_t frames) {
 
     for (size_t i = 0; i < frames; i++) {
         m_fences.emplace_back();
-        auto& groupFences = m_fences.back();
+        auto& fences = m_fences.back();
 
-        for (auto& group : m_groups) {
+        for (auto node : m_nodes) {
             vk::FenceCreateInfo info = {};
             info.flags = vk::FenceCreateFlags::Signaled;
 
-            groupFences.emplace_back(m_engine->renderer().device(), info);
+            fences.emplace_back(m_engine->renderer().device(), info);
         }
     }
 
@@ -321,93 +310,35 @@ void FrameGraph::bake() {
         return results;
     });
     
-    createGroups();
     internalSetFrames(m_frameCount);
-    createSemaphores();
+    linkSemaphores();
     preSignal();
 }
 
-void FrameGraph::createGroups() {
-    std::unordered_set<FrameNode*> finished;
+void FrameGraph::linkSemaphores() {
+    for (auto node : m_nodes) {
+        node->m_submitInfo = {};
+        node->m_submitInfo.waitSemaphores.push_back(*node->m_selfSync);
+        node->m_submitInfo.waitDstStageMask.push_back(node->m_destStages);
+        node->m_submitInfo.signalSemaphores.push_back(*node->m_selfSync);
 
-    for (auto node : m_nodeList) {
-        if (finished.count(node) == 1) continue;
-
-        uint32_t family = node->m_family;
-        std::unordered_set<FrameNode*> excluded;
-        std::queue<FrameNode*> queue;
-        queue.push(node);
-
-        while (!queue.empty()) {
-            FrameNode* currentNode = queue.front();
-            queue.pop();
-
-            if (excluded.count(currentNode) == 1) continue;
-
-            if (currentNode->m_family != family) {
-                excluded.insert(currentNode);
-            }
-
-            for (auto outEvent : currentNode->m_outEvents) {
-                queue.push(outEvent->dest);
-            }
+        for (auto signal : node->m_externalSignals) {
+            node->m_submitInfo.signalSemaphores.push_back(*signal);
         }
 
-        std::unique_ptr<Group> group = std::make_unique<Group>(node->queue());
-
-        for (size_t j = 0; j < m_nodeList.size(); j++) {
-            FrameNode* currentNode = m_nodeList[j];
-            if (finished.count(currentNode) == 1) continue;
-            if (excluded.count(currentNode) == 1) continue;
-
-            finished.insert(currentNode);
-
-            group->addNode(currentNode);
-            currentNode->m_group = group.get();
-
-            for (auto signal : currentNode->m_externalSignals) {
-                group->info.signalSemaphores.push_back(*signal);
-            }
-
-            for (size_t i = 0; i < currentNode->m_externalWaits.size(); i++) {
-                group->info.waitSemaphores.push_back(*currentNode->m_externalWaits[i]);
-                group->info.waitDstStageMask.push_back(currentNode->m_externalWaitMasks[i]);
-            }
+        for (size_t i = 0; i < node->m_externalWaits.size(); i++) {
+            node->m_submitInfo.waitSemaphores.push_back(*node->m_externalWaits[i]);
+            node->m_submitInfo.waitDstStageMask.push_back(node->m_externalWaitMasks[i]);
         }
-
-        m_groups.emplace_back(std::move(group));
     }
-}
 
-void FrameGraph::createSemaphores() {
-    for (auto& group : m_groups) {
-        group->info.waitSemaphores.push_back(*group->selfSync);
-        group->info.waitDstStageMask.push_back(group->destStages);
-        group->info.signalSemaphores.push_back(*group->selfSync);
+    for (auto& edge : m_edges) {
+        if (edge->semaphore != nullptr) {
+            auto& semaphore = *edge->semaphore;
 
-        std::unordered_set<Group*> outGroupSet;
-
-        for (auto node : group->nodes) {
-            for (auto outEvent : node->m_outEvents) {
-                outGroupSet.insert(outEvent->dest->m_group);
-            }
-        }
-
-        std::vector<Group*> outGroups;
-        for (auto outGroup : outGroupSet) {
-            outGroups.push_back(outGroup);
-        }
-
-        for (auto outGroup : outGroups) {
-            if (group->family != outGroup->family) {
-                vk::SemaphoreCreateInfo info = {};
-                m_semaphores.emplace_back(std::make_unique<vk::Semaphore>(m_engine->renderer().device(), info));
-                auto& semaphore = *m_semaphores.back();
-
-                group->info.signalSemaphores.push_back(semaphore);
-                outGroup->info.waitSemaphores.push_back(semaphore);
-                outGroup->info.waitDstStageMask.push_back(group->destStages);
-            }
+            edge->source->m_submitInfo.signalSemaphores.push_back(semaphore);
+            edge->dest->m_submitInfo.waitSemaphores.push_back(semaphore);
+            edge->dest->m_submitInfo.waitDstStageMask.push_back(edge->source->m_destStages);
         }
     }
 }
@@ -415,8 +346,8 @@ void FrameGraph::createSemaphores() {
 void FrameGraph::preSignal() {
     vk::SubmitInfo info = {};
 
-    for (auto& group : m_groups) {
-        info.signalSemaphores.push_back(*group->selfSync);
+    for (auto& node : m_nodes) {
+        info.signalSemaphores.push_back(*node->m_selfSync);
     }
 
     m_engine->renderer().graphicsQueue().submit({ info }, nullptr);
@@ -438,13 +369,13 @@ void FrameGraph::submit() {
         event->buildBarriers();
     }
 
-    for (size_t i = 0; i < m_groups.size(); i++) {
-        auto& group = m_groups[i];
+    for (size_t i = 0; i < m_nodeList.size(); i++) {
+        auto node = m_nodeList[i];
 
         m_fences[index][i].wait();
         m_fences[index][i].reset();
 
-        group->submit(m_frame, index, m_fences[index][i]);
+        node->submit(m_frame, index, m_fences[index][i]);
     }
 
     for (auto node : m_nodeList) {

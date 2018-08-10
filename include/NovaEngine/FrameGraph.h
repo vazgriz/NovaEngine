@@ -16,20 +16,6 @@ namespace Nova {
         friend class BufferUsage;
         friend class ImageUsage;
 
-        struct Group {
-            Group(const vk::Queue& queue);
-            std::vector<FrameNode*> nodes;
-            const vk::Queue* queue;
-            uint32_t family;
-            vk::PipelineStageFlags sourceStages;
-            vk::PipelineStageFlags destStages;
-            vk::SubmitInfo info;
-            std::unique_ptr<vk::Semaphore> selfSync;
-
-            void addNode(FrameNode* node);
-            void submit(size_t frame, size_t index, vk::Fence& fence);
-        };
-
         struct BufferBarrierInfo {
             vk::BufferMemoryBarrier barrier;
             vk::PipelineStageFlags source;
@@ -51,6 +37,7 @@ namespace Nova {
             FrameNode* source;
             FrameNode* dest;
             std::unique_ptr<vk::Event> event;
+            std::unique_ptr<vk::Semaphore> semaphore;
             std::vector<BufferBarrierInfo> sourceBufferBarriers;
             std::vector<ImageBarrierInfo> sourceImageBarriers;
             std::vector<BufferBarrierInfo> destBufferBarriers;
@@ -81,15 +68,12 @@ namespace Nova {
         std::vector<FrameNode*> m_nodeList;
         size_t m_frameCount;
         size_t m_frame = 1;
-        std::vector<std::unique_ptr<Group>> m_groups;
-        std::vector<std::unique_ptr<vk::Semaphore>> m_semaphores;
         std::vector<std::unique_ptr<Edge>> m_edges;
         std::vector<std::vector<vk::Fence>> m_fences;
         std::unique_ptr<Signal<size_t>> m_onFrameCountChanged;
 
         void internalSetFrames(size_t frames);
-        void createGroups();
-        void createSemaphores();
+        void linkSemaphores();
         void preSignal();
     };
 
@@ -170,11 +154,12 @@ namespace Nova {
 
     private:
         FrameGraph* m_graph;
-        FrameGraph::Group* m_group;
         const vk::Queue* m_queue;
         uint32_t m_family;
+        vk::SubmitInfo m_submitInfo;
         vk::PipelineStageFlags m_sourceStages;
         vk::PipelineStageFlags m_destStages;
+        std::unique_ptr<vk::Semaphore> m_selfSync;
         std::unique_ptr<vk::CommandPool> m_pool;
         std::vector<vk::CommandBuffer> m_commandBuffers;
         std::vector<vk::Semaphore*> m_externalSignals;
@@ -192,5 +177,6 @@ namespace Nova {
         bool addBuffer(vk::Buffer& buffer, BufferUsage::Instance usage);
         bool addImage(vk::Image& image, ImageUsage::Instance usage);
         void clearInstances();
+        void submit(size_t frame, size_t index, vk::Fence& fence);
     };
 }
