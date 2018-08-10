@@ -307,7 +307,7 @@ int main() {
         Nova::PerspectiveCamera camera = Nova::PerspectiveCamera(cameraManager, window.size(), 90.0f, 0.1f, 10.0f);
         camera.setPosition({ 0, 0, 1 });
         camera.setRotation({ 1, 0, 0, 0 });
-        Nova::FreeCam freeCam = Nova::FreeCam(window, camera, 0.25f);
+        Nova::FreeCam freeCam = Nova::FreeCam(window, camera, 0.25f, 5.0f);
         engine.addSystem(cameraManager);
         engine.addSystem(freeCam);
 

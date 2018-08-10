@@ -7,11 +7,12 @@
 
 using namespace Nova;
 
-FreeCam::FreeCam(Window& window, Camera& camera, float sensitivity) {
+FreeCam::FreeCam(Window& window, Camera& camera, float sensitivity, float speed) {
     m_window = &window;
     m_input = &m_window->input();
     m_camera = &camera;
     m_sensitivity = sensitivity;
+    m_speed = speed;
 
     m_look = {};
     m_position = m_camera->position();
@@ -33,29 +34,36 @@ void FreeCam::update(float delta) {
         glm::vec3 right = rotation * glm::vec3(1, 0, 0);
         glm::vec3 up = rotation * glm::vec3(0, 1, 0);
 
+        glm::vec3 move = {};
+
         if (m_input->getButtonHold(Button::W)) {
-            m_position += forward * delta;
+            move += forward;
         }
         
         if (m_input->getButtonHold(Button::S)) {
-            m_position -= forward * delta;
+            move -= forward;
         }
         
         if (m_input->getButtonHold(Button::D)) {
-            m_position += right * delta;
+            move += right;
         }
         
         if (m_input->getButtonHold(Button::A)) {
-            m_position -= right * delta;
+            move -= right;
         }
 
         if (m_input->getButtonHold(Button::E)) {
-            m_position += up * delta;
+            move += up;
         }
 
         if (m_input->getButtonHold(Button::Q)) {
-            m_position -= up * delta;
+            move -= up;
         }
+
+        if (glm::distance(move, glm::vec3{}) > 0.1f) {
+            move = glm::normalize(move) * delta * m_speed;
+        }
+        m_position += move;
 
         m_camera->setPosition(m_position);
         m_camera->setRotation(rotation);
