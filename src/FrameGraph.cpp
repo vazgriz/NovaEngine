@@ -245,9 +245,10 @@ void FrameGraph::Edge::recordDest(vk::CommandBuffer& commandBuffer) {
     }
 }
 
-FrameGraph::FrameGraph(Engine& engine) {
+FrameGraph::FrameGraph(Engine& engine, size_t frameCount) {
     m_engine = &engine;
     m_onFrameCountChanged = std::make_unique<Signal<size_t>>();
+    setFrames(frameCount);
 }
 
 void FrameGraph::addNode(FrameNode& node) {
@@ -262,12 +263,7 @@ void FrameGraph::addEdge(FrameNode& source, FrameNode& dest) {
     dest.m_inEvents.push_back(&event);
 }
 
-void FrameGraph::setFrameCount(size_t frames) {
-    if (frames == m_frameCount) return;
-    internalSetFrames(frames);
-}
-
-void FrameGraph::internalSetFrames(size_t frames) {
+void FrameGraph::setFrames(size_t frames) {
     m_frameCount = frames;
 
     for (auto& v : m_fences) {
@@ -310,7 +306,7 @@ void FrameGraph::bake() {
         return results;
     });
     
-    internalSetFrames(m_frameCount);
+    setFrames(m_frameCount);
     linkSemaphores();
     preSignal();
 }

@@ -7,8 +7,7 @@ using namespace Nova;
 Engine::Engine(Renderer& renderer) {
     m_renderer = &renderer;
     m_memory = std::make_unique<Memory>(*this);
-    m_frameGraph = std::make_unique<FrameGraph>(*this);
-    m_frameGraph->setFrameCount(VIRTUAL_FRAMES);
+    m_frameGraph = std::make_unique<FrameGraph>(*this, VIRTUAL_FRAMES);
 }
 
 void Engine::addWindow(Window& window) {

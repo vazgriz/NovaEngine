@@ -45,7 +45,7 @@ namespace Nova {
         };
 
     public:
-        FrameGraph(Engine& engine);
+        FrameGraph(Engine& engine, size_t frameCount);
         FrameGraph(const FrameGraph& other) = delete;
         FrameGraph& operator = (const FrameGraph& other) = delete;
         FrameGraph(FrameGraph&& other) = default;
@@ -57,7 +57,6 @@ namespace Nova {
 
         void addNode(FrameNode& node);
         void addEdge(FrameNode& source, FrameNode& dest);
-        void setFrameCount(size_t frames);
         void bake();
         void submit();
         size_t completedFrames() const;
@@ -72,7 +71,7 @@ namespace Nova {
         std::vector<std::vector<vk::Fence>> m_fences;
         std::unique_ptr<Signal<size_t>> m_onFrameCountChanged;
 
-        void internalSetFrames(size_t frames);
+        void setFrames(size_t frames);
         void linkSemaphores();
         void preSignal();
     };
