@@ -158,20 +158,18 @@ void FrameGraph::Edge::buildBarriers() {
 
             sourceBufferBarriers.push_back({ sourceBarrier, sourceInstance.second.usage->m_stageMask, destInstance->second.usage->m_stageMask });
 
-            vk::BufferMemoryBarrier destBarrier = {};
-            destBarrier.buffer = destInstance->first;
-            destBarrier.offset = destInstance->second.offset;
-            destBarrier.size = destInstance->second.size;
-            destBarrier.srcQueueFamilyIndex = source->m_family;
-            destBarrier.dstQueueFamilyIndex = dest->m_family;
-
             if (event != nullptr) {
+                vk::BufferMemoryBarrier destBarrier = {};
+                destBarrier.buffer = destInstance->first;
+                destBarrier.offset = destInstance->second.offset;
+                destBarrier.size = destInstance->second.size;
+                destBarrier.srcQueueFamilyIndex = source->m_family;
+                destBarrier.dstQueueFamilyIndex = dest->m_family;
                 destBarrier.srcAccessMask = sourceInstance.second.usage->m_accessMask;
+                destBarrier.dstAccessMask = destInstance->second.usage->m_accessMask;
+
+                destBufferBarriers.push_back({ destBarrier, sourceInstance.second.usage->m_stageMask, destInstance->second.usage->m_stageMask });
             }
-
-            destBarrier.dstAccessMask = destInstance->second.usage->m_accessMask;
-
-            destBufferBarriers.push_back({ destBarrier, sourceInstance.second.usage->m_stageMask, destInstance->second.usage->m_stageMask });
         }
     }
 
@@ -196,21 +194,19 @@ void FrameGraph::Edge::buildBarriers() {
             
             sourceImageBarriers.push_back({ sourceBarrier, sourceInstance.second.usage->m_stageMask, destInstance->second.usage->m_stageMask });
 
-            vk::ImageMemoryBarrier destBarrier = {};
-            destBarrier.image = destInstance->first;
-            destBarrier.subresourceRange = destInstance->second.range;
-            destBarrier.oldLayout = sourceInstance.second.usage->m_layout;
-            destBarrier.newLayout = destInstance->second.usage->m_layout;
-            destBarrier.srcQueueFamilyIndex = source->m_family;
-            destBarrier.dstQueueFamilyIndex = dest->m_family;
-
             if (event != nullptr) {
+                vk::ImageMemoryBarrier destBarrier = {};
+                destBarrier.image = destInstance->first;
+                destBarrier.subresourceRange = destInstance->second.range;
+                destBarrier.oldLayout = sourceInstance.second.usage->m_layout;
+                destBarrier.newLayout = destInstance->second.usage->m_layout;
+                destBarrier.srcQueueFamilyIndex = source->m_family;
+                destBarrier.dstQueueFamilyIndex = dest->m_family;
                 destBarrier.srcAccessMask = sourceInstance.second.usage->m_accessMask;
+                destBarrier.dstAccessMask = destInstance->second.usage->m_accessMask;
+
+                destImageBarriers.push_back({ destBarrier, sourceInstance.second.usage->m_stageMask, destInstance->second.usage->m_stageMask });
             }
-
-            destBarrier.dstAccessMask = destInstance->second.usage->m_accessMask;
-
-            destImageBarriers.push_back({ destBarrier, sourceInstance.second.usage->m_stageMask, destInstance->second.usage->m_stageMask });
         }
     }
 }
