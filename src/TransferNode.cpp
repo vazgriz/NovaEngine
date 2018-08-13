@@ -121,7 +121,6 @@ void TransferNode::transfer(const void* data, const Buffer& buffer, vk::BufferCo
     transfer.bufferCopy = { offset, copy.dstOffset, copy.size };
     m_transfers.push_back(transfer);
 
-    buffer.registerUsage(m_frameGraph->frame());
     m_bufferUsage->add(*transfer.buffer, copy.dstOffset, copy.size);
 }
 
@@ -148,6 +147,5 @@ void TransferNode::transfer(const void* data, const Image& image, vk::ImageLayou
     range.baseMipLevel = copy.imageSubresource.mipLevel;
     range.levelCount = 1;
 
-    image.registerUsage(m_frameGraph->frame());
     m_imageUsage->add(*transfer.image, range);
 }

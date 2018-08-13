@@ -46,11 +46,6 @@ void Resource<T, TCreateInfo>::free() {
 }
 
 template<typename T, typename TCreateInfo>
-void Resource<T, TCreateInfo>::registerUsage(size_t frame) const {
-    m_allocator->registerUsage(m_resource, frame);
-}
-
-template<typename T, typename TCreateInfo>
 IResourceAllocator<T, TCreateInfo>::IResourceAllocator(Engine& engine) : IResourceAllocatorBase(engine) {
 
 }

@@ -24,6 +24,7 @@ void Engine::addSystem(ISystem& system) {
 
 void Engine::step() {
     m_clock.update();
+    m_memory->update(m_frameGraph->completedFrames());
 
     glfwPollEvents();
     m_window->update();
@@ -35,7 +36,6 @@ void Engine::step() {
             system->update(static_cast<float>(m_clock.deltaTime()));
         }
         m_frameGraph->submit();
-        m_memory->update(m_frameGraph->completedFrames());
     }
 }
 

@@ -95,7 +95,6 @@ private:
 
     void preSubmit(size_t frame) override {
         m_swapchain->acquireNextImage(~0, m_acquireSemaphore.get(), nullptr, m_index);
-        m_mesh->registerUsage(frame);
     }
 
     std::vector<const vk::CommandBuffer*>& submit(size_t frame, size_t index) override {

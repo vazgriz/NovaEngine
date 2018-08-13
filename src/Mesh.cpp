@@ -120,16 +120,6 @@ void Mesh::bind(vk::CommandBuffer& commandBuffer) {
     }
 }
 
-void Mesh::registerUsage(size_t frame) {
-    for (auto& vertexData : m_vertexData) {
-        vertexData->buffer().registerUsage(frame);
-    }
-
-    if (m_indexData != nullptr) {
-        m_indexData->buffer().registerUsage(frame);
-    }
-}
-
 std::vector<vk::VertexInputAttributeDescription> Mesh::getAttributes() {
     std::vector<vk::VertexInputAttributeDescription> attributes;
 

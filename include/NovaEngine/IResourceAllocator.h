@@ -37,7 +37,6 @@ namespace Nova {
         Memory::Page& page() const { return *m_resource->page; }
         size_t size() const { return m_resource->allocation.size; }
         size_t offset() const { return m_resource->allocation.offset; }
-        void registerUsage(size_t frame) const;
 
     private:
         IResourceAllocator<T, TCreateInfo>* m_allocator;
@@ -52,7 +51,6 @@ namespace Nova {
     public:
         IResourceAllocator(Engine& engine);
         virtual Resource<T, TCreateInfo> allocate(const TCreateInfo& info, vk::MemoryPropertyFlags required, vk::MemoryPropertyFlags preferred) = 0;
-        virtual void registerUsage(RawResource<T>* resource, size_t frame) = 0;
         virtual void free(RawResource<T>* resource) = 0;
     };
 

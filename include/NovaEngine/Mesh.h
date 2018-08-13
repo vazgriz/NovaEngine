@@ -74,7 +74,6 @@ namespace Nova {
         IndexData& getIndexData() { return *m_indexData; }
 
         void bind(vk::CommandBuffer& commandBuffer);
-        void registerUsage(size_t frame);
 
         std::vector<vk::VertexInputAttributeDescription> getAttributes();
         std::vector<vk::VertexInputBindingDescription> getBindings();
