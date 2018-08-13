@@ -38,6 +38,9 @@ FrameNode::FrameNode(const vk::Queue& queue, vk::PipelineStageFlags sourceStages
     m_destStages = destStages;
 
     m_selfSync = std::make_unique<vk::Semaphore>(m_queue->device(), vk::SemaphoreCreateInfo{});
+    m_submitInfo.signalSemaphores.push_back(*m_selfSync);
+    m_submitInfo.waitSemaphores.push_back(*m_selfSync);
+    m_submitInfo.waitDstStageMask.push_back(m_sourceStages);
 
     createCommandPool();
 }
@@ -93,12 +96,12 @@ void FrameNode::submit(size_t frame, size_t index, vk::Fence& fence) {
 }
 
 void FrameNode::addExternalWait(vk::Semaphore& semaphore, vk::PipelineStageFlags stageMask) {
-    m_externalWaits.push_back(&semaphore);
-    m_externalWaitMasks.push_back(stageMask);
+    m_submitInfo.waitSemaphores.push_back(semaphore);
+    m_submitInfo.waitDstStageMask.push_back(stageMask);
 }
 
 void FrameNode::addExternalSignal(vk::Semaphore& semaphore) {
-    m_externalSignals.push_back(&semaphore);
+    m_submitInfo.signalSemaphores.push_back(semaphore);
 }
 
 void FrameNode::preRecord(vk::CommandBuffer& commandBuffer) {
@@ -125,6 +128,10 @@ FrameGraph::Edge::Edge(FrameNode& source, FrameNode& dest) {
         vk::SemaphoreCreateInfo info = {};
 
         semaphore = std::make_unique<vk::Semaphore>(source.m_queue->device(), info);
+
+        source.m_submitInfo.signalSemaphores.push_back(*semaphore);
+        dest.m_submitInfo.waitSemaphores.push_back(*semaphore);
+        dest.m_submitInfo.waitDstStageMask.push_back(source.m_destStages);
     }
 }
 
@@ -307,36 +314,7 @@ void FrameGraph::bake() {
     });
     
     setFrames(m_frameCount);
-    linkSemaphores();
     preSignal();
-}
-
-void FrameGraph::linkSemaphores() {
-    for (auto node : m_nodes) {
-        node->m_submitInfo = {};
-        node->m_submitInfo.waitSemaphores.push_back(*node->m_selfSync);
-        node->m_submitInfo.waitDstStageMask.push_back(node->m_destStages);
-        node->m_submitInfo.signalSemaphores.push_back(*node->m_selfSync);
-
-        for (auto signal : node->m_externalSignals) {
-            node->m_submitInfo.signalSemaphores.push_back(*signal);
-        }
-
-        for (size_t i = 0; i < node->m_externalWaits.size(); i++) {
-            node->m_submitInfo.waitSemaphores.push_back(*node->m_externalWaits[i]);
-            node->m_submitInfo.waitDstStageMask.push_back(node->m_externalWaitMasks[i]);
-        }
-    }
-
-    for (auto& edge : m_edges) {
-        if (edge->semaphore != nullptr) {
-            auto& semaphore = *edge->semaphore;
-
-            edge->source->m_submitInfo.signalSemaphores.push_back(semaphore);
-            edge->dest->m_submitInfo.waitSemaphores.push_back(semaphore);
-            edge->dest->m_submitInfo.waitDstStageMask.push_back(edge->source->m_destStages);
-        }
-    }
 }
 
 void FrameGraph::preSignal() {

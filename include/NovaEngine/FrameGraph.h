@@ -72,7 +72,6 @@ namespace Nova {
         std::unique_ptr<Signal<size_t>> m_onFrameCountChanged;
 
         void setFrames(size_t frames);
-        void linkSemaphores();
         void preSignal();
     };
 
@@ -161,9 +160,6 @@ namespace Nova {
         std::unique_ptr<vk::Semaphore> m_selfSync;
         std::unique_ptr<vk::CommandPool> m_pool;
         std::vector<vk::CommandBuffer> m_commandBuffers;
-        std::vector<vk::Semaphore*> m_externalSignals;
-        std::vector<vk::Semaphore*> m_externalWaits;
-        std::vector<vk::PipelineStageFlags> m_externalWaitMasks;
         std::vector<FrameGraph::Edge*> m_inEvents;
         std::vector<FrameGraph::Edge*> m_outEvents;
         std::vector<std::unique_ptr<BufferUsage>> m_bufferUsages;
