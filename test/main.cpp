@@ -147,7 +147,7 @@ private:
         attachment.format = m_swapchain->format();
         attachment.initialLayout = vk::ImageLayout::Undefined;
         attachment.finalLayout = vk::ImageLayout::PresentSrcKhr;
-        attachment.loadOp = vk::AttachmentLoadOp::DontCare;
+        attachment.loadOp = vk::AttachmentLoadOp::Clear;
         attachment.storeOp = vk::AttachmentStoreOp::Store;
         attachment.samples = vk::SampleCountFlags::_1;
 
