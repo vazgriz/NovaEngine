@@ -60,6 +60,7 @@ void Renderer::createInstance(const std::string& appName, const std::vector<std:
     appInfo.applicationName = appName;
     appInfo.engineName = "NovaEngine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.apiVersion = VK_MAKE_VERSION(1, 0, 0);
 
     uint32_t exCount;
     const char** requiredExtensions = glfwGetRequiredInstanceExtensions(&exCount);
