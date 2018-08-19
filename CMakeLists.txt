@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.10)
 project(NovaEngine)
 
 set(VK_INCLUDE)
@@ -47,5 +47,7 @@ target_link_libraries(NovaEngine
     ${VKW_LIB}
     ${GLFW_LIB}
 )
+
+set_target_properties(NovaEngine PROPERTIES CXX_STANDARD 17)
 
 add_subdirectory("test")
