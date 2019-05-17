@@ -8,6 +8,7 @@ set(VKW_LIB)
 set(GLFW_INCLUDE)
 set(GLFW_LIB)
 set(GLM_INCLUDE)
+set(BOOST_INCLUDE)
 
 add_library(NovaEngine
     "src/Engine.cpp"
@@ -41,6 +42,7 @@ target_include_directories(NovaEngine
     PUBLIC "${VKW_INCLUDE}"
     PUBLIC "${GLFW_INCLUDE}"
     PUBLIC "${GLM_INCLUDE}"
+    PUBLIC "${BOOST_INCLUDE}"
 )
 target_link_libraries(NovaEngine
     ${VK_LIB}

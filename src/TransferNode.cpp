@@ -13,7 +13,7 @@ TransferNode::TransferNode(Engine& engine, const vk::Queue& queue, FrameGraph& f
 
     findType();
 
-    m_onFrameCountChanged = m_frameGraph->onFrameCountChanged().connectMember<TransferNode>(*this, &TransferNode::resize);
+    m_onFrameCountChanged = m_frameGraph->onFrameCountChanged().connect(boost::bind(&TransferNode::resize, this, _1));
     resize(m_frameGraph->frameCount());
 }
 

@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <VulkanWrapper/VulkanWrapper.h>
-#include "NovaEngine/Signal.h"
+#include <boost/signals2.hpp>
 #include "NovaEngine/Input.h"
 
 namespace Nova {
@@ -29,9 +29,9 @@ namespace Nova {
         Input& input() const { return *m_input; }
 
         void update();
-        Signal<vk::Swapchain&>& onSwapchainChanged() { return *m_swapchainSignal; }
-        Signal<glm::ivec2>& onResize() { return *m_resizeSignal; }
-        Signal<bool>& onIconify() { return *m_iconifySignal; }
+        boost::signals2::signal<void(vk::Swapchain&)>& onSwapchainChanged() { return m_swapchainSignal; }
+        boost::signals2::signal<void(glm::ivec2)>& onResize() { return m_resizeSignal; }
+        boost::signals2::signal<void(bool)>& onIconify() { return m_iconifySignal; }
 
         bool shouldClose() const { return glfwWindowShouldClose(m_window.get()); }
         bool iconified() const { return m_iconified; }
@@ -68,9 +68,9 @@ namespace Nova {
         void createInput();
 
         bool m_resized = false;
-        std::unique_ptr<Signal<vk::Swapchain&>> m_swapchainSignal;
-        std::unique_ptr<Signal<glm::ivec2>> m_resizeSignal;
-        std::unique_ptr<Signal<bool>> m_iconifySignal;
+        boost::signals2::signal<void(vk::Swapchain&)> m_swapchainSignal;
+        boost::signals2::signal<void(glm::ivec2)> m_resizeSignal;
+        boost::signals2::signal<void(bool)> m_iconifySignal;
 
         static void onResize(GLFWwindow* window, int width, int height);
         void onResize(int32_t width, int32_t height);

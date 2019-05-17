@@ -2,8 +2,8 @@
 #include <VulkanWrapper/VulkanWrapper.h>
 #include <type_traits>
 #include <unordered_set>
+#include <boost/signals2.hpp>
 #include "NovaEngine/IResourceAllocator.h"
-#include "NovaEngine/Signal.h"
 
 namespace Nova {
     class Engine;
@@ -53,7 +53,7 @@ namespace Nova {
 
         size_t frame() const { return m_frame; }
         size_t frameCount() const { return m_frameCount; }
-        Signal<size_t>& onFrameCountChanged() const { return *m_onFrameCountChanged; }
+        boost::signals2::signal<void(size_t)>& onFrameCountChanged() { return m_onFrameCountChanged; }
 
         void addNode(FrameNode& node);
         void addEdge(FrameNode& source, FrameNode& dest);
@@ -69,7 +69,7 @@ namespace Nova {
         size_t m_frame = 1;
         std::vector<std::unique_ptr<Edge>> m_edges;
         std::vector<std::vector<vk::Fence>> m_fences;
-        std::unique_ptr<Signal<size_t>> m_onFrameCountChanged;
+        boost::signals2::signal<void(size_t)> m_onFrameCountChanged;
 
         void setFrames(size_t frames);
         void preSignal();

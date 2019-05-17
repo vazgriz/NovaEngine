@@ -3,6 +3,7 @@
 #include "NovaEngine/FrameGraph.h"
 #include "NovaEngine/IResourceAllocator.h"
 #include "NovaEngine/StagingAllocator.h"
+#include <boost/signals2.hpp>
 
 namespace Nova {
     class TransferNode : public FrameNode {
@@ -31,7 +32,7 @@ namespace Nova {
         FrameGraph* m_frameGraph;
         BufferUsage* m_bufferUsage;
         ImageUsage* m_imageUsage;
-        Slot<size_t> m_onFrameCountChanged;
+        boost::signals2::scoped_connection m_onFrameCountChanged;
         std::vector<const vk::CommandBuffer*> m_commandBuffers;
         std::vector<StagingAllocator> m_allocators;
         size_t m_pageSize;

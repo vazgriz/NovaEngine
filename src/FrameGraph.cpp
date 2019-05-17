@@ -250,7 +250,6 @@ void FrameGraph::Edge::recordDest(vk::CommandBuffer& commandBuffer) {
 
 FrameGraph::FrameGraph(Engine& engine, size_t frameCount) {
     m_engine = &engine;
-    m_onFrameCountChanged = std::make_unique<Signal<size_t>>();
     setFrames(frameCount);
 }
 

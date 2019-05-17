@@ -23,10 +23,6 @@ Window::Window(Engine& engine, glm::ivec2 size, const std::string& title) : m_wi
     glfwSetMouseButtonCallback(m_window.get(), &Window::onMouseEvent);
     glfwSetCursorPosCallback(m_window.get(), &Window::onMouseMove);
 
-    m_swapchainSignal = std::make_unique<Signal<vk::Swapchain&>>();
-    m_resizeSignal = std::make_unique<Signal<glm::ivec2>>();
-    m_iconifySignal = std::make_unique<Signal<bool>>();
-
     m_zeroSized = (m_size.x == 0 || m_size.y == 0);
 
     createSurface();
@@ -90,8 +86,8 @@ void Window::update() {
 
         recreateSwapchain();
 
-        m_swapchainSignal->emit(*m_swapchain);
-        m_resizeSignal->emit(m_size);
+        m_swapchainSignal(*m_swapchain);
+        m_resizeSignal(m_size);
     }
 
     m_input->update();
