@@ -4,8 +4,12 @@
 #include <NovaEngine/NovaEngine.h>
 #include <glm/glm.hpp>
 #include <fstream>
+#include <chrono>
+#include <sstream>
+#include <cmath>
 
 #define PAGE_SIZE (256 * 1024 * 1024)
+#define FPS_UPDATE_INTERVAL 0.25
 
 std::vector<glm::vec3> vertexPositions = {
     { -1.0f, -1.0f, 0.0f },
@@ -322,9 +326,23 @@ int main() {
             camera.setSize({ swapchain.extent().width, swapchain.extent().height });
         });
 
+        auto last = std::chrono::steady_clock::now();
+        size_t frames = 0;
+
         window.setVisible(true);
         while (!window.shouldClose()) {
+            auto now = std::chrono::steady_clock::now();
+            double elapsed = std::chrono::duration<double>(now - last).count();
+            if (elapsed >= FPS_UPDATE_INTERVAL) {
+                std::stringstream stream;
+                stream << "NovaEngine (" << (size_t)std::round(frames / elapsed) << " fps)";
+                window.setTitle(stream.str());
+                last = now;
+                frames = 0;
+            }
+
             engine.step();
+            frames++;
         }
         engine.wait();
     }
