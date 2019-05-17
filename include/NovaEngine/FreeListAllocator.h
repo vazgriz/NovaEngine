@@ -1,10 +1,10 @@
 #pragma once
 #include <VulkanWrapper/VulkanWrapper.h>
-#include "NovaEngine/IAllocator.h"
+#include "NovaEngine/IGenericAllocator.h"
 #include <list>
 
 namespace Nova {
-    class FreeListAllocator : public IAllocator {
+    class FreeListAllocator : public IGenericAllocator {
         struct Node {
             size_t offset;
             size_t size;

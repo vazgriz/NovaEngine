@@ -1,9 +1,9 @@
 #pragma once
-#include "NovaEngine/IAllocator.h"
+#include "NovaEngine/IGenericAllocator.h"
 #include <vector>
 
 namespace Nova {
-    class StackAllocator : public IAllocator {
+    class StackAllocator : public IGenericAllocator {
     public:
         StackAllocator(size_t offset, size_t size);
         StackAllocator(const StackAllocator& other) = delete;

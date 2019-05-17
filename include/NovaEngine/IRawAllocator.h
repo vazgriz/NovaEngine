@@ -1,6 +1,6 @@
 #pragma once
 #include <VulkanWrapper/VulkanWrapper.h>
-#include "NovaEngine/IAllocator.h"
+#include "NovaEngine/IGenericAllocator.h"
 #include "NovaEngine/Memory.h"
 
 namespace Nova {

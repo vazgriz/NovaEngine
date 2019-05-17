@@ -13,7 +13,7 @@ Allocation FreeListAllocator::allocate(size_t size, size_t alignment) {
     if (size > m_size) throw std::runtime_error("Allocation too large");
 
     for (auto it = m_nodes.begin(); it != m_nodes.end(); it++) {
-        size_t start = IAllocator::align(it->offset, alignment);
+        size_t start = IGenericAllocator::align(it->offset, alignment);
         size_t end = start + size;
 
         if (end <= (it->offset + it->size)) {

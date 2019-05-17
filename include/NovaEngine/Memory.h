@@ -1,7 +1,7 @@
 #pragma once
 #include <VulkanWrapper/VulkanWrapper.h>
 #include <unordered_set>
-#include "NovaEngine/IAllocator.h"
+#include "NovaEngine/IGenericAllocator.h"
 #include "NovaEngine/FreeListAllocator.h"
 
 namespace Nova {

@@ -1,8 +1,8 @@
 #pragma once
-#include "NovaEngine/IAllocator.h"
+#include "NovaEngine/IGenericAllocator.h"
 
 namespace Nova {
-    class LinearAllocator : public IAllocator {
+    class LinearAllocator : public IGenericAllocator {
     public:
         LinearAllocator(size_t offset, size_t size);
         LinearAllocator(const LinearAllocator& other) = delete;
